@@ -124,3 +124,35 @@ class TestUnitCell(unittest.TestCase):
 			[g12, a**2*c**2*np.sin(be_r)**2/self.uc.get_volume()**2, g23],
 			[g13, g23, a**2*b**2*np.sin(ga_r)**2/self.uc.get_volume()**2]])
 		assert_array_almost_equal(fake_recip_tensor, self.uc.reciprocal_metric_tensor, err_msg='Anorthoclase reciprocal tensor incorrectly calculated')
+
+	def test_vector_magnitude_calc(self):
+		a, b ,c, al, be, ga = [2, 3, 5, 90, 90, 90]
+		self.uc.update_cell(a, b, c, al, be, ga)
+
+		assert_almost_equal(2, self.uc.find_vector_magnitude([1,0,0])) 
+		assert_almost_equal(3, self.uc.find_vector_magnitude([0,1,0])) 
+		assert_almost_equal(np.sqrt(4+9), self.uc.find_vector_magnitude([1,1,0]))
+		assert_almost_equal(np.sqrt(4+9+25), self.uc.find_vector_magnitude([1,1,1]))
+
+		a, b, c, al, be, ga = [8.28,12.97,7.15,91.05,116.26,90.15]
+		self.uc.update_cell(a, b, c, al, be, ga)
+		dist = self.uc.find_vector_magnitude([1,1,1])
+		assert_almost_equal(15.21688, dist, places=5)
+
+	def test_lattice_plane_dspacing(self):
+		#a, b, c, al, be, ga = [8.28,12.97,7.15,91.05,116.26,90.15]
+		a, b ,c, al, be, ga = [2, 3, 5, 90, 90, 90]
+		self.uc.update_cell(a, b, c, al, be, ga)
+
+		assert_almost_equal(2, self.uc.find_plane_dspacing([1,0,0]))
+
+		a, b, c, al, be, ga = [8.28,12.97,7.15,91.05,116.26,90.15]
+		self.uc.update_cell(a, b, c, al, be, ga)
+		
+		#d-spacing of planes (calculated with PowderCell)
+		#(100) 7.42494; (010) 12.9669; (001) 6.41057; (110) 6.41039; (111) 3.84084
+		assert_almost_equal(7.42494, self.uc.find_plane_dspacing([1,0,0]), places=5)
+		assert_almost_equal(12.96689, self.uc.find_plane_dspacing([0,1,0]), places=5)
+		assert_almost_equal(6.41057, self.uc.find_plane_dspacing([0,0,1]), places=5)
+		assert_almost_equal(6.41039, self.uc.find_plane_dspacing([1,1,0]), places=5)
+		assert_almost_equal(3.84084, self.uc.find_plane_dspacing([1,1,1]), places=5)

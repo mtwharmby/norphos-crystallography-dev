@@ -2,6 +2,8 @@ import numpy as np
 from enum import Enum
 from collections import namedtuple
 
+from crystal_exceptions import MatrixException
+
 Lattice = namedtuple('Lattice', 'a, b, c, al, be, ga, V')
 
 
@@ -56,6 +58,23 @@ class UnitCell(object):
 			return np.sqrt(np.linalg.det(self.metric_tensor))
 		else:
 			return self.real_space_lattice.V
+
+	def find_vector_magnitude(self, vector, cosines_matrix=None):
+		if (cosines_matrix is None):
+			cosines_matrix = self.metric_tensor
+
+		vector = np.array(vector)
+		if vector.shape != (3L,):
+			raise MatrixException("Given vector is not a 3x1 matrix")
+
+		fix_zeros = np.vectorize(lambda x: 0 if (abs(x) <= 1e-10) else x)
+		fixed_product = fix_zeros(np.dot(np.dot(np.transpose(vector), cosines_matrix),vector))
+
+		return np.linalg.norm(np.sqrt(fixed_product))
+
+	def find_plane_dspacing(self, plane_indices):
+		one_on_d = self.find_vector_magnitude(plane_indices, self.reciprocal_metric_tensor)
+		return 1/one_on_d
 
 class PrincipleAxis(Enum):
 	__order__ = "A B C" #Needed for python 2.7
