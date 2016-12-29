@@ -116,6 +116,8 @@ class TestUnitCell(unittest.TestCase):
 			[a*c*np.cos(be_r), b*c*np.cos(al_r), c**2]])
 		assert_array_almost_equal(fake_tensor, self.uc.metric_tensor, err_msg='Anorthoclase tensor incorrectly calculated')
 
+		#This is the complete expression for the reciprocal metric tensor,
+		#(The Reciprocal Lattice, A. Authier, IUCr Pamphlet 4 (1981))
 		g12 = a*b*c**2*(np.cos(al_r)*np.cos(be_r)-np.cos(ga_r))/self.uc.get_volume()**2
 		g13 = a*b**2*c*(np.cos(al_r)*np.cos(ga_r)-np.cos(be_r))/self.uc.get_volume()**2
 		g23 = a**2*b*c*(np.cos(be_r)*np.cos(ga_r)-np.cos(al_r))/self.uc.get_volume()**2
