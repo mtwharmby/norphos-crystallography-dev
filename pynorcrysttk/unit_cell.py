@@ -2,8 +2,6 @@ import numpy as np
 from enum import Enum
 from collections import namedtuple
 
-from crystal_exceptions import MatrixException
-
 Lattice = namedtuple('Lattice', 'a, b, c, al, be, ga, V')
 
 
@@ -60,16 +58,18 @@ class UnitCell(object):
 			return self.real_space_lattice.V
 
 	def find_vector_magnitude(self, vector, cosines_matrix=None):
+		#Default to use the metric_tensor
 		if (cosines_matrix is None):
 			cosines_matrix = self.metric_tensor
 
+		#Check we've been given a real vector
 		vector = np.array(vector)
 		if vector.shape != (3L,):
 			raise MatrixException("Given vector is not a 3x1 matrix")
 
+		#Use a given metric tensor (cosines_matrix) to calculate vector length: |r| = sqrt(r^t . G . r)
 		fix_zeros = np.vectorize(lambda x: 0 if (abs(x) <= 1e-10) else x)
 		fixed_product = fix_zeros(np.dot(np.dot(np.transpose(vector), cosines_matrix),vector))
-
 		return np.linalg.norm(np.sqrt(fixed_product))
 
 	def find_plane_dspacing(self, plane_indices):
