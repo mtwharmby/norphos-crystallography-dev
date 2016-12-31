@@ -17,6 +17,8 @@ class TestUnitCell(unittest.TestCase):
 		self.uc = None
 
 	def test_metric_tensor(self):
+		#TODO Make more similar to Java test. Add Hexagonal & rhombohedral too.
+
 		#a = 3; angles 90
 		self.uc.update_cell(3)
 		fake_tensor = np.array([
@@ -33,7 +35,7 @@ class TestUnitCell(unittest.TestCase):
 			[0, 0, 25]])
 		assert_array_almost_equal(fake_tensor, self.uc.metric_tensor, err_msg='Tetragonal tensor incorrectly calculated')
 
-		#a = 2; b = 3; c = 5; angles 90
+		#a = 5; b = 3; c = 2; angles 90
 		self.uc.update_cell(5, 3, 2)
 		fake_tensor = np.array([
 			[25, 0, 0],

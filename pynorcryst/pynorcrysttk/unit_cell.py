@@ -2,10 +2,12 @@ import numpy as np
 from enum import Enum
 from collections import namedtuple
 
-Lattice = namedtuple('Lattice', 'a, b, c, al, be, ga, V')
+Lattice = namedtuple('Lattice', 'a, b, c, al, be, ga, V')#TODO: Move tensor into Lattice?
 
 
 class UnitCell(object):
+
+	#TODO Compare to Java code & make more similar, esp. Lattice.
 
 	def __init__(self):
 		self.principle_axis = PrincipleAxis.B
