@@ -31,69 +31,98 @@ class UnitCell(object):
 		angles = [lattice.al, lattice.be, lattice.ga]
 		p_axis = PrincipleAxis.NONE
 
-		#Set any angles with value None to 90 & find out which angles are identical
-		for i in range(3):
-			if angles[i] is None:
-				angles[i] = 90
-		angles_compared = [angles[0]==angles[1],
-						   angles[0]==angles[2],
-						   angles[1]==angles[2]]
-
-		#Analyse the user input
-		if False not in angles_compared:
-			if (a == b and a == c) or (b is None and c is None):
-				b = c = a
-				if angles[0] != 90:
-					#Rhombohedral
-					pass
-				else:
-					#Cubic
-					pass
-			elif (a == b and a != c) or (b is None and c is not None):
-				#Tetragonal
-				b = a
-				p_axis = PrincipleAxis.C
-			elif (a != b and c is None):
-				#Tetragonal (b -> c)
-				c = b
-				b = a
-				p_axis = PrincipleAxis.C
-			else:
-				#Orthorhombic (a != b != c)
-				if (lattice.b is None or lattice.c is None):
-					raise LatticeException("Orthorhombic requires all three lengths to be given")
-		elif True not in angles_compared:
-			#Triclinic
-			if (b is None or c is None) and None not in angles:
-				raise LatticeException("Triclinic requires three lengths three angles to be given")
+		#Implicit rhombohedral...
+		if ([a,b,c].count(None) == 2 and angles.count(None) ==2):
+			#et all angles to be same
+			for val in angles:
+				if val is not None:
+					angles = [val,]*3
+			for val in [a,b,c]:
+				if val is not None:
+					a = val
+					b = val
+					c = val
+		elif (a == b and a == c and al == be and al == ga):
+			#Explicit rhombohedral
+			pass
 		else:
-			#Monoclinic
-			if lattice.principle_axis != PrincipleAxis.NONE:
-				p_axis = lattice.principle_axis
-				old_angles = angles
-				angles = [90]*3
-
-				if angles_compared[0]:
-					#ga different
-					angles[p_axis.value] = old_angles[2]
-				elif angles_compared[1]:
-					#be different
-					angles[p_axis.value] = old_angles[1]
-				else:
-					#al different
-					angles[p_axis.value] = old_angles[0]
-			else:
-				if (lattice.b is None or lattice.c is None):
-					raise LatticeException("Monoclinic requires all three lengths to be given")
-				if angles_compared[0]:
-					#ga different
+			#We've got some 90degree angles or all angles have been specified
+			#Set any angles with value None to 90 & find out which angles are identical
+			for i in range(3):
+				if angles[i] is None:
+					angles[i] = 90
+			angles_compared = [angles[0]==angles[1],
+							   angles[0]==angles[2],
+							   angles[1]==angles[2]]
+			
+	
+			#Analyse the user input
+			if False not in angles_compared:
+				if (a == b and a == c) or (b is None and c is None):
+					b = c = a
+					if angles[0] != 90:
+						#Rhombohedral
+						pass
+					else:
+						#Cubic
+						pass
+				elif (a == b and a != c) or (b is None and c is not None):
+					#Tetragonal
+					b = a
 					p_axis = PrincipleAxis.C
-				elif angles_compared[1]:
-					#be different
-					p_axis = PrincipleAxis.B
+				elif (a != b and c is None):
+					#Tetragonal (b -> c)
+					c = b
+					b = a
+					p_axis = PrincipleAxis.C
 				else:
-					#al different
-					p_axis = PrincipleAxis.A
+					#Orthorhombic (a != b != c)
+					if (lattice.b is None or lattice.c is None):
+						raise LatticeException("Orthorhombic requires all three lengths to be given")
+			elif True not in angles_compared:
+				#Triclinic
+				if (b is None or c is None) and None not in angles:
+					raise LatticeException("Triclinic requires three lengths three angles to be given")
+			else:
+				if (120 in angles and angles_compared.count(True) == 1):
+					#Hexagonal
+					if (b is None and c is not None):
+						b = a
+					elif (b is not None and c is None):
+						c = b
+						b = a
+					else:
+						raise LatticeException("Hexagonal requires at least two lengths to be given")
+					angles = [90,90,120]
+					p_axis = PrincipleAxis.C
+				else:
+					#Monoclinic
+					if lattice.principle_axis != PrincipleAxis.NONE:
+						p_axis = lattice.principle_axis
+						old_angles = angles
+						angles = [90]*3
+		
+						if angles_compared[0]:
+							#ga different
+							angles[p_axis.value] = old_angles[2]
+						elif angles_compared[1]:
+							#be different
+							angles[p_axis.value] = old_angles[1]
+						else:
+							#al different
+							angles[p_axis.value] = old_angles[0]
+					else:
+						if (lattice.b is None or lattice.c is None):
+							raise LatticeException("Monoclinic requires all three lengths to be given")
+						if angles_compared[0]:
+							#ga different
+							p_axis = PrincipleAxis.C
+						elif angles_compared[1]:
+							#be different
+							p_axis = PrincipleAxis.B
+						else:
+							#al different
+							p_axis = PrincipleAxis.A
 
 		return Lattice(a, b, c, angles[0], angles[1], angles[2], p_axis)
 

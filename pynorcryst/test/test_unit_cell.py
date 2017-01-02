@@ -19,9 +19,12 @@ class TestUnitCell(unittest.TestCase):
 		self.uc = None
 
 	def test_metric_tensor(self):
-		#TODO Make more similar to Java test. Add Hexagonal & rhombohedral too.
-
-		#a = 3; angles 90
+		'''
+		metric tensor = [[a**2, a*b*cos(ga), a*c*cos(be)],
+		                 [a*b*cos(ga), b**2, b*c*cos(al)],
+		                 [a*c*cos(be), b*c*cos(al), c**2]]
+		'''
+		#Cubic a = 3
 		self.uc = UnitCell(Lattice(3))
 		fake_tensor = np.array([
 			[9, 0, 0],
@@ -29,7 +32,23 @@ class TestUnitCell(unittest.TestCase):
 			[0, 0, 9]])
 		assert_array_almost_equal(fake_tensor, self.uc.metric_tensor, err_msg='Cubic tensor incorrectly calculated')
 
-		#a = b = 2; c = 5 angles 90
+		#Rhombohedral a = 3; al = 60
+		self.uc.update_cell(Lattice(3, al=60))
+		fake_tensor = np.array([
+			[9, 4.5, 4.5],
+			[4.5, 9, 4.5],
+			[4.5, 4.5, 9]])
+		assert_array_almost_equal(fake_tensor, self.uc.metric_tensor, err_msg='Rhombohedral tensor incorrectly calculated')
+
+		#Hexagonal a = 5; c = 2; ga = 120
+		self.uc.update_cell(Lattice(5,c=2,ga=120))
+		fake_tensor = np.array([
+			[25, -12.5, 0],
+			[-12.5, 25, 0],
+			[0, 0, 4]])
+		assert_array_almost_equal(fake_tensor, self.uc.metric_tensor, err_msg='Hexagonal tensor incorrectly calculated')
+
+		#Tetragonal a = b = 2; c = 5
 		self.uc.update_cell(Lattice(2, 5))
 		fake_tensor = np.array([
 			[4, 0, 0],
