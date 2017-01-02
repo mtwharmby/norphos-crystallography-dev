@@ -24,8 +24,15 @@ public class UnitCellTest {
 		Dataset fakeTensor = DatasetFactory.createFromObject(new double[]{9,0,0, 0,9,0, 0,0,9}, 3,3);
 		TestUtils.assertDatasetEquals(fakeTensor, uc.getMetricTensor(), 0, 1e-10);
 		
-		//TODO Rhombohedral a = 3; al = ?
-		//TODO Hexagonal a = 5; c = 2; ga = 120
+		//Rhombohedral a = 3; al = 60
+		uc.updateCell(new Lattice.LatticeBuilder(3).setAl(60).build());
+		fakeTensor = DatasetFactory.createFromObject(new double[]{9,4.5,4.5, 4.5,9,4.5, 4.5,4.5,9}, 3,3);
+		TestUtils.assertDatasetEquals(fakeTensor, uc.getMetricTensor(), 0, 1e-10);
+		
+		//Hexagonal a = 5; c = 2; ga = 120
+		uc.updateCell(new Lattice.LatticeBuilder(5).setC(2).setGa(120).build());
+		fakeTensor = DatasetFactory.createFromObject(new double[]{25,-12.5,0, -12.5,25,0, 0,0,4}, 3,3);
+		TestUtils.assertDatasetEquals(fakeTensor, uc.getMetricTensor(), 0, 1e-10);
 		
 		//Tetragonal a = b = 2; c = 5
 		uc.updateCell(new Lattice.LatticeBuilder(2).setC(5).build());

@@ -1,6 +1,8 @@
 package uk.co.norphos.crystallography.toolkit;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public class Lattice {
@@ -61,6 +63,13 @@ public class Lattice {
 	public PrincipleAxis getPrincipleAxis() {
 		return principleAxis;
 	}
+	
+	@Override
+	public String toString() {
+		return "Lattice [a=" + a + ", b=" + b + ", c=" + c + ", al=" + al 
+				+ ", be=" + be + ", ga=" + ga + ", pAxis=" + principleAxis + "]";
+	}
+
 
 
 	public static class LatticeBuilder {
@@ -104,50 +113,72 @@ public class Lattice {
 			return this;
 		}
 
-		public Lattice build() {
-			//Change all null angle values to 90 & compare them to one-another
-			for (int i = 0; i < 3; i++) {
-				if (angles[i] == null) angles[i] = 90.0;
-			}
-			List<Boolean> anglesCompared = new ArrayList<>(3); //[al-be, al-ga, be-ga]
-			anglesCompared.add(angles[0].equals(angles[1]));
-			anglesCompared.add(angles[0].equals(angles[2]));
-			anglesCompared.add(angles[1].equals(angles[2]));
+		@Override
+		public String toString() {
+			return "LatticeBuilder [a=" + a + ", b=" + b + ", c=" + c + ", al=" + angles[0] 
+					+ ", be=" + angles[1] + ", ga=" + angles[2] + ", pAxis=" + pAxis + "]";
+		}
 
-			if (!anglesCompared.contains(false)) {
-				if ((a == b && a == c) || (b == null && c == null)) {
-					b = c = a;
-					if (angles[0] != 90) {
-						//Rhombohedral
-					} else {
-						//Cubic
+		public Lattice build() {
+			if ((Collections.frequency(Arrays.asList(angles), null) == 2 && (b == null && c == null)) || 
+					(angles[0] != null && angles[0] == angles[1] && angles[0] == angles[2])){
+				//Rhombohedral
+				if (b == null) b = a;
+				if (c == null) c = a;
+				for (Double val : angles) {
+					if (val != null) {
+						angles[0] = val;
+						angles[1] = val;
+						angles[2] = val;
+						break;
 					}
-				} else if ((a == b && a != c) || (b == null && c != null)) {
-					//Tetragonal
-					b = a;
-					pAxis = PrincipleAxis.C;
-				} else {
-					//Orthorhombic (a != b != c)
-					if (b == null || c == null) throw new IllegalArgumentException("Orthorhombic requires all three lengths to be given");
 				}
-			} else if (angles[2] == 120) {
-				//Hexagonal
-				b = a;
-			} else if (!anglesCompared.contains(true)) {
-				//Triclinic
-				if (b == null || c == null) throw new IllegalArgumentException("Triclinic requires all three lengths to be given");
 			} else {
-				//Monoclinic
-				if (b == null || c == null) throw new IllegalArgumentException("Monoclinic requires all three lengths to be given");
-				if (anglesCompared.get(0)) {
-					//ga different
-					pAxis = PrincipleAxis.C;
-				} else if (anglesCompared.get(1)) {
-					//be different
-					pAxis = PrincipleAxis.B;
+				//Change all null angle values to 90 & compare them to one-another
+				for (int i = 0; i < 3; i++) {
+					if (angles[i] == null) angles[i] = 90.0;
+				}
+				List<Boolean> anglesCompared = new ArrayList<>(3); //[al-be, al-ga, be-ga]
+				anglesCompared.add(angles[0].equals(angles[1]));
+				anglesCompared.add(angles[0].equals(angles[2]));
+				anglesCompared.add(angles[1].equals(angles[2]));
+
+				if (!anglesCompared.contains(false)) {
+					if ((a == b && a == c) || (b == null && c == null)) {
+						//Cubic
+						b = c = a;
+					} else if ((a == b && a != c) || (b == null && c != null)) {
+						//Tetragonal
+						b = a;
+						pAxis = PrincipleAxis.C;
+					} else {
+						//Orthorhombic (a != b != c)
+						if (b == null || c == null) throw new IllegalArgumentException("Orthorhombic requires all three lengths to be given");
+					}
+				} else if (!anglesCompared.contains(true)) {
+					//Triclinic
+					if (b == null || c == null) throw new IllegalArgumentException("Triclinic requires all three lengths to be given");
 				} else {
-					//al different
-					pAxis = PrincipleAxis.A;
+					if (Arrays.asList(angles).contains(120.0) && (Collections.frequency(anglesCompared, true) == 1)) {
+						//Hexagonal
+						if (b == null) {
+							b = a;
+						}
+						pAxis = PrincipleAxis.C;
+					} else {
+						//Monoclinic
+						if (b == null || c == null) throw new IllegalArgumentException("Monoclinic requires all three lengths to be given");
+						if (anglesCompared.get(0)) {
+							//ga different
+							pAxis = PrincipleAxis.C;
+						} else if (anglesCompared.get(1)) {
+							//be different
+							pAxis = PrincipleAxis.B;
+						} else {
+							//al different
+							pAxis = PrincipleAxis.A;
+						}
+					}
 				}
 			}
 
