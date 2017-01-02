@@ -7,7 +7,7 @@ public class Lattice {
 
 	private double a, b, c, al, be, ga;
 	private double alR, beR, gaR; //Angles in radians for convenience
-	private PrincipleAxis pAxis;
+	private PrincipleAxis principleAxis;
 
 	private Lattice(Double a, Double b, Double c, Double al, Double be, Double ga, PrincipleAxis pAxis) {
 		this.a = a;
@@ -19,7 +19,7 @@ public class Lattice {
 		this.beR = Math.toRadians(be);
 		this.ga = ga;
 		this.gaR = Math.toRadians(ga);
-		this.pAxis = pAxis;
+		this.principleAxis = pAxis;
 	}
 
 	public double a() {
@@ -59,7 +59,7 @@ public class Lattice {
 	}
 
 	public PrincipleAxis getPrincipleAxis() {
-		return pAxis;
+		return principleAxis;
 	}
 
 
