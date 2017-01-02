@@ -62,6 +62,48 @@ public class UnitCellTest {
 	}
 	
 	@Test
+	public void testReciprocalMetricTensor() {
+		uc = new UnitCell(new Lattice.LatticeBuilder(2).setB(3).setC(5).build());
+		RealMatrix fakeTensor = MatrixUtils.createRealMatrix(new double[][]{{4,0,0}, {0,9,0}, {0,0,25}});
+		TestUtils.assertEquals("Orthorhombic tensor incorrectly calculated",  fakeTensor, uc.getMetricTensor(), 1e-10);
+		
+		RealMatrix fakeReciprocalTensor = MatrixUtils.createRealMatrix(new double[][]{
+			{9.*25./Math.pow(uc.getCellVolume(),2), 0, 0},
+			{0, 4.*25./Math.pow(uc.getCellVolume(),2), 0},
+			{0, 0, 4.*9./Math.pow(uc.getCellVolume(), 2)}});
+		TestUtils.assertEquals("Orthorhombic reciprocal tensor incorrectly calculated", fakeReciprocalTensor, uc.getReciprocalMetricTensor(), 1e-10);
+		
+		//Try more complicated triclinic case: This is Anorthoclase
+		Lattice anorthoclase = new Lattice.LatticeBuilder(8.28).setB(12.97).setC(7.15).setAl(91.05).setBe(116.26).setGa(90.15).build();
+		uc.updateCell(anorthoclase);
+		//Real space metric tensor
+		double g00 = Math.pow(anorthoclase.a(),2);
+		double g11 = Math.pow(anorthoclase.b(),2);
+		double g22 = Math.pow(anorthoclase.c(),2);
+		double g01 = anorthoclase.a()*anorthoclase.b()*Math.cos(anorthoclase.gaR());
+		double g02 = anorthoclase.a()*anorthoclase.c()*Math.cos(anorthoclase.beR());
+		double g12 = anorthoclase.b()*anorthoclase.c()*Math.cos(anorthoclase.alR());
+		fakeTensor = MatrixUtils.createRealMatrix(new double[][]{
+			{g00, g01, g02},
+			{g01, g11, g12},
+			{g02, g12, g22}});
+		TestUtils.assertEquals("Anorthoclase tensor incorrectly calculated",  fakeTensor, uc.getMetricTensor(), 1e-10);
+		
+		//Reciprocal space metric tensor
+		g00 = Math.pow(anorthoclase.b(),2) * Math.pow(anorthoclase.c(),2) * Math.pow(Math.sin(anorthoclase.alR()),2) / Math.pow(uc.getCellVolume(), 2);
+		g11 = Math.pow(anorthoclase.a(),2) * Math.pow(anorthoclase.c(),2) * Math.pow(Math.sin(anorthoclase.beR()),2) / Math.pow(uc.getCellVolume(), 2);
+		g22 = Math.pow(anorthoclase.a(),2) * Math.pow(anorthoclase.b(),2) * Math.pow(Math.sin(anorthoclase.gaR()),2) / Math.pow(uc.getCellVolume(), 2);
+		g01 = anorthoclase.a() * anorthoclase.b() * Math.pow(anorthoclase.c(),2) * (Math.cos(anorthoclase.alR()) * Math.cos(anorthoclase.beR()) - Math.cos(anorthoclase.gaR())) / Math.pow(uc.getCellVolume(),2);
+		g02 = anorthoclase.a() * Math.pow(anorthoclase.b(),2) * anorthoclase.c() * (Math.cos(anorthoclase.alR()) * Math.cos(anorthoclase.gaR()) - Math.cos(anorthoclase.beR())) / Math.pow(uc.getCellVolume(),2);
+		g12 = Math.pow(anorthoclase.a(),2) * anorthoclase.b() * anorthoclase.c() * (Math.cos(anorthoclase.beR()) * Math.cos(anorthoclase.gaR()) - Math.cos(anorthoclase.alR())) / Math.pow(uc.getCellVolume(),2);
+		fakeReciprocalTensor =  MatrixUtils.createRealMatrix(new double[][]{
+			{g00, g01, g02},
+			{g01, g11, g12},
+			{g02, g12, g22}});
+		TestUtils.assertEquals("Anorthoclase reciprocal tensor incorrectly calculated",  fakeReciprocalTensor, uc.getReciprocalMetricTensor(), 1e-10);
+	}
+	
+	@Test
 	public void testVectorMagnitude() {
 		uc = new UnitCell(new Lattice.LatticeBuilder(2).setB(3).setC(5).build());
 		assertEquals("Orthorhombic [100] vector incorrectly calculated", 2.0, uc.findVectorMagnitude(MatrixUtils.createRealVector(new double[]{1,0,0})), 1e-6);
@@ -72,5 +114,46 @@ public class UnitCellTest {
 		uc.updateCell(new Lattice.LatticeBuilder(8.28).setB(12.97).setC(7.15).setAl(91.05).setBe(116.26).setGa(90.15).build());
 		assertEquals(15.21688, uc.findVectorMagnitude(MatrixUtils.createRealVector(new double[]{1,1,1})), 1e-5);
 	}
-
+	
+	@Test
+	public void testLatticePlaneDSpacing() {
+		//Try more complicated triclinic case: This is Anorthoclase
+		Lattice anorthoclase = new Lattice.LatticeBuilder(8.28).setB(12.97).setC(7.15).setAl(91.05).setBe(116.26).setGa(90.15).build();
+		uc = new UnitCell(anorthoclase);
+		
+		//d-spacing of planes (calculated with PowderCell)
+		//(100) 7.42494; (010) 12.9669; (001) 6.41057; (110) 6.41039; (111) 3.84084
+		//Could do this on the fly too...
+		assertEquals("(100) spacing incorrect", 7.42494, uc.findPlaneDSpacing(MatrixUtils.createRealVector(new double[]{1,0,0})), 1e-5);
+		assertEquals("(010) spacing incorrect", 12.96689, uc.findPlaneDSpacing(MatrixUtils.createRealVector(new double[]{0,1,0})), 1e-5);
+		assertEquals("(001) spacing incorrect", 6.41057, uc.findPlaneDSpacing(MatrixUtils.createRealVector(new double[]{0,0,1})), 1e-5);
+		assertEquals("(110) spacing incorrect", 6.41039, uc.findPlaneDSpacing(MatrixUtils.createRealVector(new double[]{1,1,0})), 1e-5);
+		assertEquals("(111) spacing incorrect", 3.84084, uc.findPlaneDSpacing(MatrixUtils.createRealVector(new double[]{1,1,1})), 1e-5);
+	}
+	
+//	@Test
+	public void testGetCell() {
+		uc = new UnitCell(new Lattice.LatticeBuilder(2).setB(3).setC(5).build());
+//		TODO Write test!
+//		cell = self.uc.cell()
+//		assert_equal(3.0, cell.a)
+//		assert_equal(5.0, cell.b)
+//		assert_equal(2.0, cell.c)
+//		assert_almost_equal(30.0, cell.al, places=8)
+//		assert_almost_equal(45.0, cell.be, places=8)
+//		assert_almost_equal(60.0, cell.ga, places=8)
+	}
+	
+//	@Test
+	public void testGetReciprocalCell() {
+		uc = new UnitCell(new Lattice.LatticeBuilder(2).setB(3).setC(5).build());
+//		TODO Write test!
+//		cell = self.uc.cell()
+//		assert_equal(3.0, cell.a)
+//		assert_equal(5.0, cell.b)
+//		assert_equal(2.0, cell.c)
+//		assert_almost_equal(30.0, cell.al, places=8)
+//		assert_almost_equal(45.0, cell.be, places=8)
+//		assert_almost_equal(60.0, cell.ga, places=8)
+	}
 }
