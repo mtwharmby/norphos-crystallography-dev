@@ -1,14 +1,15 @@
 package uk.co.norphos.crystallography.toolkit;
 
-import org.eclipse.january.dataset.Dataset;
-import org.eclipse.january.dataset.DatasetFactory;
-import org.eclipse.january.dataset.LinearAlgebra;
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 
 public class UnitCell {
 	
 	private Lattice real, reciprocal;
 	private Double volume;
-	private Dataset metricTensor, reciprocalMetricTensor;
+	private RealMatrix metricTensor, reciprocalMetricTensor;
 
 	public UnitCell(Lattice realSpaceLattice) {
 		updateCell(realSpaceLattice);
@@ -18,14 +19,12 @@ public class UnitCell {
 		this.real = realSpaceLattice;
 		volume = null;
 	
-		metricTensor = determineMetricTensors();
-		reciprocalMetricTensor = LinearAlgebra.calcInverse(metricTensor);
+		metricTensor = determineMetricTensor();
+		reciprocalMetricTensor = new LUDecomposition(metricTensor).getSolver().getInverse();
 		volume = calculateCellVolume();
 	}
 	
-	private Dataset determineMetricTensors() {
-		Dataset metricTensor = DatasetFactory.zeros(new int[]{3, 3});
-		
+	private RealMatrix determineMetricTensor() {
 		double p00 = real.a()*real.a();
 		double p11 = real.b()*real.b();
 		double p22 = real.c()*real.c();
@@ -34,18 +33,11 @@ public class UnitCell {
 		double p02 = offAxisCalculator(real.a(), real.c(), real.beR());
 		double p12 = offAxisCalculator(real.b(), real.c(), real.alR());
 		
-		metricTensor.set(p00, 0, 0);
-		metricTensor.set(p01, 0, 1);
-		metricTensor.set(p02, 0, 2);
-		metricTensor.set(p01, 1, 0);
-		metricTensor.set(p11, 1, 1);
-		metricTensor.set(p12, 1, 2);
-		metricTensor.set(p02, 2, 0);
-		metricTensor.set(p12, 2, 1);
-		metricTensor.set(p22, 2, 2);
-		
-		return metricTensor;
-	}
+		return MatrixUtils.createRealMatrix(new double[][]{
+			{p00, p01, p02},
+			{p01, p11, p12},
+			{p02, p12, p22}});
+		}
 	
 	private double offAxisCalculator(double a, double b, double angle) {
 		double result = a *b * Math.cos(angle);
@@ -54,15 +46,24 @@ public class UnitCell {
 	}
 	
 	private double calculateCellVolume() {
-		return Math.sqrt(LinearAlgebra.calcDeterminant(metricTensor));
+		return Math.sqrt(new LUDecomposition(metricTensor).getDeterminant());
 	}
 	
-	public Dataset getMetricTensor() {
+	public RealMatrix getMetricTensor() {
 		return metricTensor;
 	}
 	
 	public double getCellVolume() {
 		return volume;
+	}
+	
+	public double findVectorMagnitude(RealVector vector) {
+		return findVectorMagnitude(vector, metricTensor);
+	}
+	
+	public double findVectorMagnitude(RealVector vector, RealMatrix tensor) {
+		double product = vector.dotProduct(tensor.operate(vector));
+		return Math.sqrt(product);
 	}
 
 }

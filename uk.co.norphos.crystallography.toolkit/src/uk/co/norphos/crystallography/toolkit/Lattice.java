@@ -70,6 +70,65 @@ public class Lattice {
 				+ ", be=" + be + ", ga=" + ga + ", pAxis=" + principleAxis + "]";
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		long temp;
+		temp = Double.doubleToLongBits(a);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(al);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(alR);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(b);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(be);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(beR);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(c);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(ga);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		temp = Double.doubleToLongBits(gaR);
+		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((principleAxis == null) ? 0 : principleAxis.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Lattice other = (Lattice) obj;
+		if (Double.doubleToLongBits(a) != Double.doubleToLongBits(other.a))
+			return false;
+		if (Double.doubleToLongBits(al) != Double.doubleToLongBits(other.al))
+			return false;
+		if (Double.doubleToLongBits(alR) != Double.doubleToLongBits(other.alR))
+			return false;
+		if (Double.doubleToLongBits(b) != Double.doubleToLongBits(other.b))
+			return false;
+		if (Double.doubleToLongBits(be) != Double.doubleToLongBits(other.be))
+			return false;
+		if (Double.doubleToLongBits(beR) != Double.doubleToLongBits(other.beR))
+			return false;
+		if (Double.doubleToLongBits(c) != Double.doubleToLongBits(other.c))
+			return false;
+		if (Double.doubleToLongBits(ga) != Double.doubleToLongBits(other.ga))
+			return false;
+		if (Double.doubleToLongBits(gaR) != Double.doubleToLongBits(other.gaR))
+			return false;
+		if (principleAxis != other.principleAxis)
+			return false;
+		return true;
+	}
+
 
 
 	public static class LatticeBuilder {
