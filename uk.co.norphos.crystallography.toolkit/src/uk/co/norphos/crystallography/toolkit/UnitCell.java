@@ -7,7 +7,7 @@ import org.apache.commons.math3.linear.RealVector;
 
 public class UnitCell {
 	
-	private Lattice real, reciprocal;
+	private Lattice lattice, reciprocalLattice;
 	private Double volume, reciprocalVolume;
 	private RealMatrix metricTensor, reciprocalMetricTensor;
 	private LUDecomposition metricTensorLUDecomp, reciprocalMetricTensorLUDecomp;
@@ -17,7 +17,7 @@ public class UnitCell {
 	}
 	
 	public void updateCell(Lattice realSpaceLattice) {
-		this.real = realSpaceLattice;
+		this.lattice = realSpaceLattice;
 		volume = null;
 	
 		metricTensor = determineMetricTensor();
@@ -26,16 +26,16 @@ public class UnitCell {
 		reciprocalMetricTensor = metricTensorLUDecomp.getSolver().getInverse();
 		reciprocalMetricTensorLUDecomp = new LUDecomposition(reciprocalMetricTensor);
 		reciprocalVolume = Math.sqrt(reciprocalMetricTensorLUDecomp.getDeterminant());
-		reciprocal = determineReciprocalLattice();
+		reciprocalLattice = determineReciprocalLattice();
 	}
 	
 	private RealMatrix determineMetricTensor() {
-		double p00 = real.a()*real.a();
-		double p11 = real.b()*real.b();
-		double p22 = real.c()*real.c();
-		double p01 = offAxisCalculator(real.a(), real.b(), real.gaR());
-		double p02 = offAxisCalculator(real.a(), real.c(), real.beR());
-		double p12 = offAxisCalculator(real.b(), real.c(), real.alR());
+		double p00 = lattice.a()*lattice.a();
+		double p11 = lattice.b()*lattice.b();
+		double p22 = lattice.c()*lattice.c();
+		double p01 = offAxisCalculator(lattice.a(), lattice.b(), lattice.gaR());
+		double p02 = offAxisCalculator(lattice.a(), lattice.c(), lattice.beR());
+		double p12 = offAxisCalculator(lattice.b(), lattice.c(), lattice.alR());
 		
 		return MatrixUtils.createRealMatrix(new double[][]{
 			{p00, p01, p02},
@@ -60,8 +60,8 @@ public class UnitCell {
 		return result;
 	}
 	
-	public Lattice getCell() {
-		return real;
+	public Lattice getLattice() {
+		return lattice;
 	}
 	
 	public RealMatrix getMetricTensor() {
@@ -69,7 +69,7 @@ public class UnitCell {
 	}
 	
 	public Lattice getReciprocalLattice() {
-		return reciprocal;
+		return reciprocalLattice;
 	}
 	
 	public RealMatrix getReciprocalMetricTensor() {

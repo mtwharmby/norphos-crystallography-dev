@@ -7,7 +7,7 @@ from crystal_exceptions import *
 
 class UnitCell(object):
 
-	def __init__(self, lattice=None):
+	def __init__(self, lattice):
 		self.volume = None
 		#Angles in radians for convenience
 		self.al_r, self.be_r, self.ga_r = None, None, None
