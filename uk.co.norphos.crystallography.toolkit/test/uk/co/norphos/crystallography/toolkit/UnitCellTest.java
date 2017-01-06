@@ -130,30 +130,48 @@ public class UnitCellTest {
 		assertEquals("(110) spacing incorrect", 6.41039, uc.findPlaneDSpacing(MatrixUtils.createRealVector(new double[]{1,1,0})), 1e-5);
 		assertEquals("(111) spacing incorrect", 3.84084, uc.findPlaneDSpacing(MatrixUtils.createRealVector(new double[]{1,1,1})), 1e-5);
 	}
-	
-//	@Test
-	public void testGetCell() {
-		uc = new UnitCell(new Lattice.LatticeBuilder(2).setB(3).setC(5).build());
-//		TODO Write test!
-//		cell = self.uc.cell()
-//		assert_equal(3.0, cell.a)
-//		assert_equal(5.0, cell.b)
-//		assert_equal(2.0, cell.c)
-//		assert_almost_equal(30.0, cell.al, places=8)
-//		assert_almost_equal(45.0, cell.be, places=8)
-//		assert_almost_equal(60.0, cell.ga, places=8)
+		
+	@Test
+	public void testGetReciprocalCell() {
+		Lattice orthoLat = new Lattice.LatticeBuilder(2).setB(3).setC(5).build();
+		uc = new UnitCell(orthoLat);
+		Lattice fakeReciprocalLat = calculateReciprocalLattice(orthoLat, uc.getCellVolume());
+		//Compare lattices
+		assertEquals("a* incorrectly calculated", fakeReciprocalLat.a(), uc.getReciprocalLattice().a(), 1e-10);
+		assertEquals("b* incorrectly calculated", fakeReciprocalLat.b(), uc.getReciprocalLattice().b(), 1e-10);
+		assertEquals("c* incorrectly calculated", fakeReciprocalLat.c(), uc.getReciprocalLattice().c(), 1e-10);
+		assertEquals("al* incorrectly calculated", fakeReciprocalLat.al(), uc.getReciprocalLattice().al(), 1e-10);
+		assertEquals("be* incorrectly calculated", fakeReciprocalLat.be(), uc.getReciprocalLattice().be(), 1e-10);
+		assertEquals("ga* incorrectly calculated", fakeReciprocalLat.ga(), uc.getReciprocalLattice().ga(), 1e-10);
+		
+		Lattice anorthoclase = new Lattice.LatticeBuilder(8.28).setB(12.97).setC(7.15).setAl(91.05).setBe(116.26).setGa(90.15).build();
+		uc.updateCell(anorthoclase);
+		fakeReciprocalLat = calculateReciprocalLattice(anorthoclase, uc.getCellVolume());
+		assertEquals("a* incorrectly calculated", fakeReciprocalLat.a(), uc.getReciprocalLattice().a(), 1e-10);
+		assertEquals("b* incorrectly calculated", fakeReciprocalLat.b(), uc.getReciprocalLattice().b(), 1e-10);
+		assertEquals("c* incorrectly calculated", fakeReciprocalLat.c(), uc.getReciprocalLattice().c(), 1e-10);
+		assertEquals("al* incorrectly calculated", fakeReciprocalLat.al(), uc.getReciprocalLattice().al(), 1e-10);
+		assertEquals("be* incorrectly calculated", fakeReciprocalLat.be(), uc.getReciprocalLattice().be(), 1e-10);
+		assertEquals("ga* incorrectly calculated", fakeReciprocalLat.ga(), uc.getReciprocalLattice().ga(), 1e-10);
 	}
 	
-//	@Test
-	public void testGetReciprocalCell() {
-		uc = new UnitCell(new Lattice.LatticeBuilder(2).setB(3).setC(5).build());
-//		TODO Write test!
-//		cell = self.uc.cell()
-//		assert_equal(3.0, cell.a)
-//		assert_equal(5.0, cell.b)
-//		assert_equal(2.0, cell.c)
-//		assert_almost_equal(30.0, cell.al, places=8)
-//		assert_almost_equal(45.0, cell.be, places=8)
-//		assert_almost_equal(60.0, cell.ga, places=8)
+	private Lattice calculateReciprocalLattice(Lattice realLattice, double volume) {
+		double aStar, bStar, cStar, alStar, beStar, gaStar;
+		
+		//Reciprocal lattice lengths
+		aStar = realLattice.b() * realLattice.c() * Math.sin(realLattice.alR()) / volume;
+		bStar = realLattice.a() * realLattice.c() * Math.sin(realLattice.beR()) / volume;
+		cStar = realLattice.a() * realLattice.b() * Math.sin(realLattice.gaR()) / volume;
+		//Reciprocal lattice angles
+		alStar = Math.toDegrees(Math.acos(
+				(Math.cos(realLattice.beR()) * Math.cos(realLattice.gaR()) - Math.cos(realLattice.alR())) / Math.abs(Math.sin(realLattice.beR()) * Math.sin(realLattice.gaR()))
+				));
+		beStar = Math.toDegrees(Math.acos(
+				(Math.cos(realLattice.alR()) * Math.cos(realLattice.gaR()) - Math.cos(realLattice.beR())) / Math.abs(Math.sin(realLattice.alR()) * Math.sin(realLattice.gaR()))
+				));
+		gaStar = Math.toDegrees(Math.acos(
+				(Math.cos(realLattice.alR()) * Math.cos(realLattice.beR()) - Math.cos(realLattice.gaR())) / Math.abs(Math.sin(realLattice.alR()) * Math.sin(realLattice.beR()))
+						));
+		return new Lattice.LatticeBuilder(aStar).setB(bStar).setC(cStar).setAl(alStar).setBe(beStar).setGa(gaStar).build();
 	}
 }

@@ -8,9 +8,9 @@ import org.apache.commons.math3.linear.RealVector;
 public class UnitCell {
 	
 	private Lattice real, reciprocal;
-	private Double volume;
+	private Double volume, reciprocalVolume;
 	private RealMatrix metricTensor, reciprocalMetricTensor;
-	private LUDecomposition metricTensorLUDecomp;
+	private LUDecomposition metricTensorLUDecomp, reciprocalMetricTensorLUDecomp;
 
 	public UnitCell(Lattice realSpaceLattice) {
 		updateCell(realSpaceLattice);
@@ -22,9 +22,11 @@ public class UnitCell {
 	
 		metricTensor = determineMetricTensor();
 		metricTensorLUDecomp = new LUDecomposition(metricTensor);
-		reciprocalMetricTensor = metricTensorLUDecomp.getSolver().getInverse();
-		reciprocal = determineReciprocalLattice();
 		volume = Math.sqrt(metricTensorLUDecomp.getDeterminant());
+		reciprocalMetricTensor = metricTensorLUDecomp.getSolver().getInverse();
+		reciprocalMetricTensorLUDecomp = new LUDecomposition(reciprocalMetricTensor);
+		reciprocalVolume = Math.sqrt(reciprocalMetricTensorLUDecomp.getDeterminant());
+		reciprocal = determineReciprocalLattice();
 	}
 	
 	private RealMatrix determineMetricTensor() {
@@ -45,9 +47,9 @@ public class UnitCell {
 		double rA = Math.sqrt(reciprocalMetricTensor.getEntry(0, 0));
 		double rB = Math.sqrt(reciprocalMetricTensor.getEntry(1, 1));
 		double rC = Math.sqrt(reciprocalMetricTensor.getEntry(2, 2));
-		double rAl = Math.toDegrees(Math.acos(reciprocalMetricTensor.getEntry(0, 1)));
-		double rBe = Math.toDegrees(Math.acos(reciprocalMetricTensor.getEntry(0, 2)));
-		double rGa = Math.toDegrees(Math.acos(reciprocalMetricTensor.getEntry(1, 2)));
+		double rAl = Math.toDegrees(Math.acos(reciprocalMetricTensor.getEntry(1, 2) / (rB * rC)));
+		double rBe = Math.toDegrees(Math.acos(reciprocalMetricTensor.getEntry(0, 2) / (rA * rC)));
+		double rGa = Math.toDegrees(Math.acos(reciprocalMetricTensor.getEntry(0, 1) / (rA * rB)));
 		
 		return new Lattice.LatticeBuilder(rA).setB(rB).setC(rC).setAl(rAl).setBe(rBe).setGa(rGa).build();
 	}
@@ -76,6 +78,10 @@ public class UnitCell {
 	
 	public double getCellVolume() {
 		return volume;
+	}
+	
+	public double getReciprocalCellVolume() {
+		return reciprocalVolume;
 	}
 	
 	public double findVectorMagnitude(RealVector vector) {

@@ -177,3 +177,44 @@ class TestUnitCell(unittest.TestCase):
 		assert_almost_equal(6.41057, self.uc.find_plane_dspacing([0,0,1]), places=5)
 		assert_almost_equal(6.41039, self.uc.find_plane_dspacing([1,1,0]), places=5)
 		assert_almost_equal(3.84084, self.uc.find_plane_dspacing([1,1,1]), places=5)
+
+	def test_reciprocal_lattice_determination(self):
+		def calc_reciprocal_length(a, b, ga, vol):
+			return a*b*np.sin(np.radians(ga))/vol
+
+		def calc_reciprocal_angle(al, be, ga):
+			al_r, be_r, ga_r = map(np.radians, [al, be, ga])
+			return np.degrees(np.arccos((np.cos(al_r) * np.cos(be_r) - np.cos(ga_r))/abs(np.sin(al_r) * np.sin(be_r))))
+
+		def generate_reciprocal_lat(real_lat):
+			a_star = calc_reciprocal_length(real_lat.b, real_lat.c, real_lat.al, self.uc.volume)
+			b_star = calc_reciprocal_length(real_lat.a, real_lat.c, real_lat.be, self.uc.volume)
+			c_star = calc_reciprocal_length(real_lat.a, real_lat.b, real_lat.ga, self.uc.volume)
+	
+			al_star = calc_reciprocal_angle(real_lat.be, real_lat.ga, real_lat.al)
+			be_star = calc_reciprocal_angle(real_lat.al, real_lat.ga, real_lat.be)
+			ga_star = calc_reciprocal_angle(real_lat.al, real_lat.be, real_lat.ga)
+
+			return Lattice(a_star, b_star, c_star, al_star, be_star, ga_star)
+
+		ortho_lat = Lattice(2,3,5,90,90,90)
+		self.uc = UnitCell(ortho_lat)
+		
+		fake_recip_lat = generate_reciprocal_lat(ortho_lat)
+		assert_almost_equal(fake_recip_lat.a, self.uc.reciprocal.a, places=10)
+		assert_almost_equal(fake_recip_lat.b, self.uc.reciprocal.b, places=10)
+		assert_almost_equal(fake_recip_lat.c, self.uc.reciprocal.c, places=10)
+		assert_almost_equal(fake_recip_lat.al, self.uc.reciprocal.al, places=10)
+		assert_almost_equal(fake_recip_lat.be, self.uc.reciprocal.be, places=10)
+		assert_almost_equal(fake_recip_lat.ga, self.uc.reciprocal.ga, places=10)
+
+		anorthoclase_lat = Lattice(8.28,12.97,7.15,91.05,116.26,90.15)
+		self.uc.update_cell(anorthoclase_lat)
+
+		fake_recip_lat = generate_reciprocal_lat(anorthoclase_lat)
+		assert_almost_equal(fake_recip_lat.a, self.uc.reciprocal.a, places=10)
+		assert_almost_equal(fake_recip_lat.b, self.uc.reciprocal.b, places=10)
+		assert_almost_equal(fake_recip_lat.c, self.uc.reciprocal.c, places=10)
+		assert_almost_equal(fake_recip_lat.al, self.uc.reciprocal.al, places=10)
+		assert_almost_equal(fake_recip_lat.be, self.uc.reciprocal.be, places=10)
+		assert_almost_equal(fake_recip_lat.ga, self.uc.reciprocal.ga, places=10)

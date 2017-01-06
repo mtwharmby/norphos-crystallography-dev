@@ -11,8 +11,10 @@ class UnitCell(object):
 		self.volume = None
 		#Angles in radians for convenience
 		self.al_r, self.be_r, self.ga_r = None, None, None
-		#Tensors
+		#Lattices
 		self.real, self.reciprocal = None, None
+		#Tensors
+		self.metric_tensor, self.reciprocal_metric_tensor = None, None
 	
 		#Set the lattices up values
 		self.update_cell(lattice)
@@ -22,9 +24,12 @@ class UnitCell(object):
 		self.al_r, self.be_r, self.ga_r = map(np.radians, [self.real.al, 
 														   self.real.be,
 														   self.real.ga])
+		
 		self.metric_tensor = self.__determine_metric_tensor()
-		self.volume = self.__calculate_cell_volume()
+		self.volume = np.sqrt(np.linalg.det(self.metric_tensor))
 		self.reciprocal_metric_tensor = np.linalg.inv(self.metric_tensor)
+		self.reciprocal_volume = np.sqrt(np.linalg.det(self.reciprocal_metric_tensor))
+		self.reciprocal = self.__determine_reciprocal_lattice()
 
 	def __evaluate_lattice(self, lattice):
 		a, b, c = lattice.a, lattice.b, lattice.c
@@ -42,6 +47,7 @@ class UnitCell(object):
 					a = val
 					b = val
 					c = val
+					break
 		elif (a == b and a == c and al == be and al == ga):
 			#Explicit rhombohedral
 			pass
@@ -55,7 +61,6 @@ class UnitCell(object):
 							   angles[0]==angles[2],
 							   angles[1]==angles[2]]
 			
-	
 			#Analyse the user input
 			if False not in angles_compared:
 				if (a == b and a == c) or (b is None and c is None):
@@ -147,8 +152,16 @@ class UnitCell(object):
 			[p01, p11, p12],
 			[p02, p12, p22]])
 
-	def __calculate_cell_volume(self):
-		return np.sqrt(np.linalg.det(self.metric_tensor))
+	def __determine_reciprocal_lattice(self):
+		#Reciprocal lattice lengths
+		r_a, r_b, r_c = map(lambda x: np.sqrt(self.reciprocal_metric_tensor[x,x]), [0, 1, 2])
+
+		#Reciprocal lattice angles
+		r_al = np.degrees(np.arccos(self.reciprocal_metric_tensor[1,2] / (r_b * r_c)))
+		r_be = np.degrees(np.arccos(self.reciprocal_metric_tensor[0,2] / (r_a * r_c)))
+		r_ga = np.degrees(np.arccos(self.reciprocal_metric_tensor[0,1] / (r_a * r_b)))
+		
+		return Lattice(r_a, r_b, r_c, r_al, r_be, r_ga)
 
 	def cell(self):
 		return self.real
