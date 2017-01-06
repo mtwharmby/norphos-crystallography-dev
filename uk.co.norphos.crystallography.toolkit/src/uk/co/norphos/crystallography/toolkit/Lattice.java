@@ -7,9 +7,9 @@ import java.util.List;
 
 public class Lattice {
 
-	private double a, b, c, al, be, ga;
-	private double alR, beR, gaR; //Angles in radians for convenience
-	private PrincipleAxis principleAxis;
+	private final double a, b, c, al, be, ga;
+	private final double alR, beR, gaR; //Angles in radians for convenience
+	private final PrincipleAxis principleAxis;
 
 	private Lattice(Double a, Double b, Double c, Double al, Double be, Double ga, PrincipleAxis pAxis) {
 		this.a = a;
