@@ -98,7 +98,7 @@ class TestUnitCell(unittest.TestCase):
 	def test_return_cell(self):
 		self.uc = UnitCell(Lattice(3, 5 ,2, 30, 45, 60))
 
-		cell = self.uc.cell()
+		cell = self.uc.lattice
 		assert_equal(3.0, cell.a)
 		assert_equal(5.0, cell.b)
 		assert_equal(2.0, cell.c)
@@ -199,22 +199,24 @@ class TestUnitCell(unittest.TestCase):
 
 		ortho_lat = Lattice(2,3,5,90,90,90)
 		self.uc = UnitCell(ortho_lat)
+		recip_cell = self.uc.reciprocal_lattice
 		
 		fake_recip_lat = generate_reciprocal_lat(ortho_lat)
-		assert_almost_equal(fake_recip_lat.a, self.uc.reciprocal.a, places=10)
-		assert_almost_equal(fake_recip_lat.b, self.uc.reciprocal.b, places=10)
-		assert_almost_equal(fake_recip_lat.c, self.uc.reciprocal.c, places=10)
-		assert_almost_equal(fake_recip_lat.al, self.uc.reciprocal.al, places=10)
-		assert_almost_equal(fake_recip_lat.be, self.uc.reciprocal.be, places=10)
-		assert_almost_equal(fake_recip_lat.ga, self.uc.reciprocal.ga, places=10)
+		assert_almost_equal(fake_recip_lat.a, recip_cell.a, places=10)
+		assert_almost_equal(fake_recip_lat.b, recip_cell.b, places=10)
+		assert_almost_equal(fake_recip_lat.c, recip_cell.c, places=10)
+		assert_almost_equal(fake_recip_lat.al, recip_cell.al, places=10)
+		assert_almost_equal(fake_recip_lat.be, recip_cell.be, places=10)
+		assert_almost_equal(fake_recip_lat.ga, recip_cell.ga, places=10)
 
 		anorthoclase_lat = Lattice(8.28,12.97,7.15,91.05,116.26,90.15)
 		self.uc.update_cell(anorthoclase_lat)
+		recip_cell = self.uc.reciprocal_lattice
 
 		fake_recip_lat = generate_reciprocal_lat(anorthoclase_lat)
-		assert_almost_equal(fake_recip_lat.a, self.uc.reciprocal.a, places=10)
-		assert_almost_equal(fake_recip_lat.b, self.uc.reciprocal.b, places=10)
-		assert_almost_equal(fake_recip_lat.c, self.uc.reciprocal.c, places=10)
-		assert_almost_equal(fake_recip_lat.al, self.uc.reciprocal.al, places=10)
-		assert_almost_equal(fake_recip_lat.be, self.uc.reciprocal.be, places=10)
-		assert_almost_equal(fake_recip_lat.ga, self.uc.reciprocal.ga, places=10)
+		assert_almost_equal(fake_recip_lat.a, recip_cell.a, places=10)
+		assert_almost_equal(fake_recip_lat.b, recip_cell.b, places=10)
+		assert_almost_equal(fake_recip_lat.c, recip_cell.c, places=10)
+		assert_almost_equal(fake_recip_lat.al, recip_cell.al, places=10)
+		assert_almost_equal(fake_recip_lat.be, recip_cell.be, places=10)
+		assert_almost_equal(fake_recip_lat.ga, recip_cell.ga, places=10)

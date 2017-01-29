@@ -12,7 +12,7 @@ class UnitCell(object):
 		#Angles in radians for convenience
 		self.al_r, self.be_r, self.ga_r = None, None, None
 		#Lattices
-		self.real, self.reciprocal = None, None
+		self.lattice, self.reciprocal_lattice = None, None
 		#Tensors
 		self.metric_tensor, self.reciprocal_metric_tensor = None, None
 	
@@ -20,16 +20,16 @@ class UnitCell(object):
 		self.update_cell(lattice)
 
 	def update_cell(self, lattice):
-		self.real = self.__evaluate_lattice(lattice)
-		self.al_r, self.be_r, self.ga_r = map(np.radians, [self.real.al, 
-														   self.real.be,
-														   self.real.ga])
+		self.lattice = self.__evaluate_lattice(lattice)
+		self.al_r, self.be_r, self.ga_r = map(np.radians, [self.lattice.al, 
+														   self.lattice.be,
+														   self.lattice.ga])
 		
 		self.metric_tensor = self.__determine_metric_tensor()
 		self.volume = np.sqrt(np.linalg.det(self.metric_tensor))
 		self.reciprocal_metric_tensor = np.linalg.inv(self.metric_tensor)
 		self.reciprocal_volume = np.sqrt(np.linalg.det(self.reciprocal_metric_tensor))
-		self.reciprocal = self.__determine_reciprocal_lattice()
+		self.reciprocal_lattice = self.__determine_reciprocal_lattice()
 
 	def __evaluate_lattice(self, lattice):
 		a, b, c = lattice.a, lattice.b, lattice.c
@@ -138,14 +138,14 @@ class UnitCell(object):
 				return 0.0
 			return result
 
-		#Generate metric tensor and store the real space lattice
-		p00 = self.real.a*self.real.a
-		p11 = self.real.b*self.real.b
-		p22 = self.real.c*self.real.c
+		#Generate metric tensor and store the.lattice space lattice
+		p00 = self.lattice.a*self.lattice.a
+		p11 = self.lattice.b*self.lattice.b
+		p22 = self.lattice.c*self.lattice.c
 		#Off axis
-		p01 = __calc_offaxis(self.real.a, self.real.b, self.ga_r)
-		p02 = __calc_offaxis(self.real.a, self.real.c, self.be_r)
-		p12 = __calc_offaxis(self.real.b, self.real.c, self.al_r)
+		p01 = __calc_offaxis(self.lattice.a, self.lattice.b, self.ga_r)
+		p02 = __calc_offaxis(self.lattice.a, self.lattice.c, self.be_r)
+		p12 = __calc_offaxis(self.lattice.b, self.lattice.c, self.al_r)
 
 		return np.array([
 			[p00, p01, p02],
@@ -153,25 +153,25 @@ class UnitCell(object):
 			[p02, p12, p22]])
 
 	def __determine_reciprocal_lattice(self):
-		#Reciprocal lattice lengths
+		#Reciprocal_lattice lattice lengths
 		r_a, r_b, r_c = map(lambda x: np.sqrt(self.reciprocal_metric_tensor[x,x]), [0, 1, 2])
 
-		#Reciprocal lattice angles
+		#Reciprocal_lattice lattice angles
 		r_al = np.degrees(np.arccos(self.reciprocal_metric_tensor[1,2] / (r_b * r_c)))
 		r_be = np.degrees(np.arccos(self.reciprocal_metric_tensor[0,2] / (r_a * r_c)))
 		r_ga = np.degrees(np.arccos(self.reciprocal_metric_tensor[0,1] / (r_a * r_b)))
 		
 		return Lattice(r_a, r_b, r_c, r_al, r_be, r_ga)
 
-	def cell(self):
-		return self.real
+	def lattice(self):
+		return self.lattice
 
 	def find_vector_magnitude(self, vector, cosines_matrix=None):
 		#Default to use the metric_tensor
 		if (cosines_matrix is None):
 			cosines_matrix = self.metric_tensor
 
-		#Check we've been given a real vector
+		#Check we've been given a.lattice vector
 		vector = np.array(vector)
 		if vector.shape != (3L,):
 			raise MatrixException("Given vector is not a 3x1 matrix")
