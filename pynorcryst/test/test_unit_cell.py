@@ -7,7 +7,7 @@ from collections import namedtuple
 
 import unittest
 from nose.tools import assert_equal, assert_almost_equal
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_allclose, assert_array_almost_equal
 
 class TestUnitCell(unittest.TestCase):
 
@@ -229,7 +229,7 @@ class TestUnitCell(unittest.TestCase):
 		sum_sq_orthon_mat = np.sum(np.power(self.uc.orthonormalisation_matrix, 2), axis=1)
 		for i in range(3):
 			assert_equal(np.matrix(lengths[i]**2), sum_sq_orthon_mat[i])
-		
+
 		#Try a triclinic case
 		lengths = [8.28,12.97,7.15]
 		anorthoclase_lat = Lattice(lengths[0],lengths[1],lengths[2],91.05,116.26,90.15)
@@ -238,3 +238,16 @@ class TestUnitCell(unittest.TestCase):
 		sum_sq_orthon_mat = np.sum(np.power(self.uc.orthonormalisation_matrix, 2), axis=1)
 		for i in range(3):
 			assert_equal(np.matrix(lengths[i]**2), sum_sq_orthon_mat[i])
+
+	def test_cartesian_distance_calc(self):
+		ortho_lat = Lattice(2,3,5,90,90,90)
+		self.uc = UnitCell(ortho_lat)
+		coords = self.uc.find_cartesian_coordinates([2,1,3])
+		assert_allclose(np.matrix('4.;3.;15.'), coords)
+
+		#Finding distance across body diagonal of triclinic cell
+		anorthoclase_lat = Lattice(8.28,12.97,7.15,91.05,116.26,90.15)
+		self.uc.update_cell(anorthoclase_lat)
+		coords = self.uc.find_vector_magnitude([1,1,1])
+		dist = np.sqrt(np.sum(np.power(coords, 2)))
+		assert_almost_equal(15.21688, dist, places=5)

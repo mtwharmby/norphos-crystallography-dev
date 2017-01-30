@@ -152,7 +152,7 @@ class UnitCell(object):
 		p02 = __calc_offaxis(self.lattice.a, self.lattice.c, self.be_r)
 		p12 = __calc_offaxis(self.lattice.b, self.lattice.c, self.al_r)
 
-		return np.array([
+		return np.matrix([
 			[p00, p01, p02],
 			[p01, p11, p12],
 			[p02, p12, p22]])
@@ -168,27 +168,50 @@ class UnitCell(object):
 		
 		return Lattice(r_a, r_b, r_c, r_al, r_be, r_ga)
 
+	def __convert_to_vector(self, vector):
+		#Check we've been given a lattice vector
+		vector = np.matrix(vector)
+		if vector.shape != (3L,1L,):
+			if vector.size == 3:
+				vector = vector.reshape(3,1)
+			else:
+				raise MatrixException("Given vector cannot be formed into a 3x1 vector.")
+		return vector
+
 	def lattice(self):
 		return self.lattice
 
-	def find_vector_magnitude(self, vector, cosines_matrix=None):
+	def find_vector_magnitude(self, vector, tensor=None):
 		#Default to use the metric_tensor
-		if (cosines_matrix is None):
-			cosines_matrix = self.metric_tensor
+		if (tensor is None):
+			tensor=self.metric_tensor
 
-		#Check we've been given a.lattice vector
-		vector = np.array(vector)
-		if vector.shape != (3L,):
-			raise MatrixException("Given vector is not a 3x1 matrix")
+		#convert our input to a column vector
+		vector = self.__convert_to_vector(vector)
 
-		#Use a given metric tensor (cosines_matrix) to calculate vector length: |r| = sqrt(r^t . G . r)
+		#Use a given metric tensor (tensor) to calculate vector length: |r| = sqrt(r^T . G . r)
 		fix_zeros = np.vectorize(lambda x: 0 if (abs(x) <= 1e-10) else x)
-		fixed_product = fix_zeros(np.dot(np.dot(np.transpose(vector), cosines_matrix),vector))
+		fixed_product = fix_zeros(vector.T.dot(tensor).dot(vector))
 		return np.linalg.norm(np.sqrt(fixed_product))
 
 	def find_plane_dspacing(self, plane_indices):
 		one_on_d = self.find_vector_magnitude(plane_indices, self.reciprocal_metric_tensor)
 		return 1/one_on_d
+
+	def find_cartesian_coordinates(self, crystal_coordinates, crystal_origin=[0,0,0]):
+		return self.__find_coordinates(crystal_coordinates, crystal_origin, self.orthonormalisation_matrix)
+
+	def find_crystal_coordinates(self, cartesian_coordinates, cartesian_origin=[0,0,0]):
+		return self.__find_coordinates(cartesian_coordinates, cartesian_origin, np.linalg.inv(self.orthonormalisation_matrix))
+
+	def __find_coordinates(self, coordinates, origin, matrix):
+		#Ensure we have two column vectors as input
+		coordinates = self.__convert_to_vector(coordinates)
+		origin = self.__convert_to_vector(origin)
+		coordinates = coordinates - origin
+
+		return matrix.dot(coordinates)
+
 
 class PrincipleAxis(Enum):
 	__order__ = "A B C" #Needed for python 2.7
