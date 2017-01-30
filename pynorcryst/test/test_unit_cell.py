@@ -98,13 +98,12 @@ class TestUnitCell(unittest.TestCase):
 	def test_return_cell(self):
 		self.uc = UnitCell(Lattice(3, 5 ,2, 30, 45, 60))
 
-		cell = self.uc.lattice
-		assert_equal(3.0, cell.a)
-		assert_equal(5.0, cell.b)
-		assert_equal(2.0, cell.c)
-		assert_almost_equal(30.0, cell.al, places=8)
-		assert_almost_equal(45.0, cell.be, places=8)
-		assert_almost_equal(60.0, cell.ga, places=8)
+		assert_equal(3.0, self.uc.lattice.a)
+		assert_equal(5.0, self.uc.lattice.b)
+		assert_equal(2.0, self.uc.lattice.c)
+		assert_almost_equal(30.0, self.uc.lattice.al, places=8)
+		assert_almost_equal(45.0, self.uc.lattice.be, places=8)
+		assert_almost_equal(60.0, self.uc.lattice.ga, places=8)
 
 	def test_return_cell_volume(self):
 		self.uc = UnitCell(Lattice(2,3,5))
@@ -199,24 +198,43 @@ class TestUnitCell(unittest.TestCase):
 
 		ortho_lat = Lattice(2,3,5,90,90,90)
 		self.uc = UnitCell(ortho_lat)
-		recip_cell = self.uc.reciprocal_lattice
 		
 		fake_recip_lat = generate_reciprocal_lat(ortho_lat)
-		assert_almost_equal(fake_recip_lat.a, recip_cell.a, places=10)
-		assert_almost_equal(fake_recip_lat.b, recip_cell.b, places=10)
-		assert_almost_equal(fake_recip_lat.c, recip_cell.c, places=10)
-		assert_almost_equal(fake_recip_lat.al, recip_cell.al, places=10)
-		assert_almost_equal(fake_recip_lat.be, recip_cell.be, places=10)
-		assert_almost_equal(fake_recip_lat.ga, recip_cell.ga, places=10)
+		assert_almost_equal(fake_recip_lat.a, self.uc.reciprocal_lattice.a, places=10)
+		assert_almost_equal(fake_recip_lat.b, self.uc.reciprocal_lattice.b, places=10)
+		assert_almost_equal(fake_recip_lat.c, self.uc.reciprocal_lattice.c, places=10)
+		assert_almost_equal(fake_recip_lat.al, self.uc.reciprocal_lattice.al, places=10)
+		assert_almost_equal(fake_recip_lat.be, self.uc.reciprocal_lattice.be, places=10)
+		assert_almost_equal(fake_recip_lat.ga, self.uc.reciprocal_lattice.ga, places=10)
 
 		anorthoclase_lat = Lattice(8.28,12.97,7.15,91.05,116.26,90.15)
 		self.uc.update_cell(anorthoclase_lat)
-		recip_cell = self.uc.reciprocal_lattice
 
 		fake_recip_lat = generate_reciprocal_lat(anorthoclase_lat)
-		assert_almost_equal(fake_recip_lat.a, recip_cell.a, places=10)
-		assert_almost_equal(fake_recip_lat.b, recip_cell.b, places=10)
-		assert_almost_equal(fake_recip_lat.c, recip_cell.c, places=10)
-		assert_almost_equal(fake_recip_lat.al, recip_cell.al, places=10)
-		assert_almost_equal(fake_recip_lat.be, recip_cell.be, places=10)
-		assert_almost_equal(fake_recip_lat.ga, recip_cell.ga, places=10)
+		assert_almost_equal(fake_recip_lat.a, self.uc.reciprocal_lattice.a, places=10)
+		assert_almost_equal(fake_recip_lat.b, self.uc.reciprocal_lattice.b, places=10)
+		assert_almost_equal(fake_recip_lat.c, self.uc.reciprocal_lattice.c, places=10)
+		assert_almost_equal(fake_recip_lat.al, self.uc.reciprocal_lattice.al, places=10)
+		assert_almost_equal(fake_recip_lat.be, self.uc.reciprocal_lattice.be, places=10)
+		assert_almost_equal(fake_recip_lat.ga, self.uc.reciprocal_lattice.ga, places=10)
+
+	def test_direction_cosines_calc(self):
+		#Rows in direction cosines matrix should be such that sum of squares of 
+		#each element in a row totals 1; orthonormalisation matrix is direction
+		#cosines matrix multiplies by magnitude of cell lengths.
+		lengths = [2,3,5]
+		ortho_lat = Lattice(lengths[0],lengths[1],lengths[2],90,90,90)
+		self.uc = UnitCell(ortho_lat)
+
+		sum_sq_orthon_mat = np.sum(np.power(self.uc.orthonormalisation_matrix, 2), axis=1)
+		for i in range(3):
+			assert_equal(np.matrix(lengths[i]**2), sum_sq_orthon_mat[i])
+		
+		#Try a triclinic case
+		lengths = [8.28,12.97,7.15]
+		anorthoclase_lat = Lattice(lengths[0],lengths[1],lengths[2],91.05,116.26,90.15)
+		self.uc.update_cell(anorthoclase_lat)
+
+		sum_sq_orthon_mat = np.sum(np.power(self.uc.orthonormalisation_matrix, 2), axis=1)
+		for i in range(3):
+			assert_equal(np.matrix(lengths[i]**2), sum_sq_orthon_mat[i])

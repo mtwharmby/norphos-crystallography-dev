@@ -13,6 +13,7 @@ class UnitCell(object):
 		self.al_r, self.be_r, self.ga_r = None, None, None
 		#Lattices
 		self.lattice, self.reciprocal_lattice = None, None
+		self.orthonormalisation_matrix = None
 		#Tensors
 		self.metric_tensor, self.reciprocal_metric_tensor = None, None
 	
@@ -24,12 +25,16 @@ class UnitCell(object):
 		self.al_r, self.be_r, self.ga_r = map(np.radians, [self.lattice.al, 
 														   self.lattice.be,
 														   self.lattice.ga])
-		
 		self.metric_tensor = self.__determine_metric_tensor()
 		self.volume = np.sqrt(np.linalg.det(self.metric_tensor))
 		self.reciprocal_metric_tensor = np.linalg.inv(self.metric_tensor)
 		self.reciprocal_volume = np.sqrt(np.linalg.det(self.reciprocal_metric_tensor))
 		self.reciprocal_lattice = self.__determine_reciprocal_lattice()
+
+		self.orthonormalisation_matrix = np.matrix([[self.lattice.a,0,0],
+												   [self.lattice.b*np.cos(self.ga_r), self.lattice.b*np.sin(self.ga_r),0],
+												   [self.lattice.c*np.cos(self.be_r), -self.lattice.c*np.sin(self.be_r)*np.cos(np.radians(self.reciprocal_lattice.al)), 1/self.reciprocal_lattice.c]])
+
 
 	def __evaluate_lattice(self, lattice):
 		a, b, c = lattice.a, lattice.b, lattice.c
