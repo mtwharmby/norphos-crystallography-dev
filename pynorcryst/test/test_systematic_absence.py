@@ -1,7 +1,7 @@
-from pynorcrysttk.systematic_absences import SystematicAbsence
+from pynorcrysttk.systematic_absence import SystematicAbsence
 
 import unittest
-from nose.tools import assert_true, assert_false
+from nose.tools import assert_true, assert_false, assert_equal
 
 class TestSystematicAbsence(unittest.TestCase):
 
@@ -58,3 +58,10 @@ class TestSystematicAbsence(unittest.TestCase):
 		assert_false(self.sys_abs.is_reflection_absent([1,1,-1]), "Reflection not h0l type")
 		assert_true(self.sys_abs.is_reflection_absent([1,0,1]), "101 should be absent with an n-glide perpendicular to b-direction")
 		assert_false(self.sys_abs.is_reflection_absent([1,1,1]), "111 should not be absent with an n-glide perpendicular to b-direction")
+
+	def test_unstructured_pattern(self):
+		self.sys_abs = SystematicAbsence([1,0,0,0,0,0,0,0,1], [1,0,1], 2)
+		assert_equal((3,3), self.sys_abs.pattern.shape, "Pattern has wrong shape")
+
+		self.sys_abs = SystematicAbsence([1,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], [1,1,1,1], 2)
+		assert_equal((4,4), self.sys_abs.pattern.shape, "Pattern has wrong shape")

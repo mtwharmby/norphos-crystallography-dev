@@ -13,6 +13,11 @@ class SystematicAbsence(object):
 			#We expect a 3x3 pattern and a 3x1 condition or 4x4 and 4x1 respectively
 			raise MatrixException("Systematic absence condition and pattern are not compatible ")
 
+		if (self.pattern.size == 9) & (self.pattern.shape != (3,3)):
+			self.pattern = self.pattern.reshape((3,3))
+		elif (self.pattern.size == 16) & (self.pattern.shape != (4,4)):
+			self.pattern = self.pattern.reshape((4,4))
+
 	def is_reflection_type(self, hkl):
 		hkl = np.matrix(hkl)
 		#If we are dealing with Miller-Bravais 4-index reflections
