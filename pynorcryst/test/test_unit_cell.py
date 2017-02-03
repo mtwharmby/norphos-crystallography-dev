@@ -15,7 +15,7 @@ class TestUnitCell(unittest.TestCase):
 		#self.uc = UnitCell()
 		pass
 
-	def teardownclass(self):
+	def tearDown(self):
 		self.uc = None
 
 	def test_metric_tensor(self):
