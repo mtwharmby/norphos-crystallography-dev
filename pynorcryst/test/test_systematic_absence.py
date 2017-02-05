@@ -65,3 +65,10 @@ class TestSystematicAbsence(unittest.TestCase):
 
 		self.sys_abs = SystematicAbsence([1,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], [1,1,1,1], 2)
 		assert_equal((4,4), self.sys_abs.pattern.shape, "Pattern has wrong shape")
+
+	def test_str(self):
+		self.sys_abs = SystematicAbsence([1,0,0,0,0,0,0,0,1], [1,0,1], 2)
+		assert_equal("h0l: h+l=2n", self.sys_abs.__str__())
+
+		self.sys_abs = SystematicAbsence([1,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,1], [1,1,1,1], 2)
+		assert_equal("h-h0l: h+k+i+l=2n", self.sys_abs.__str__())

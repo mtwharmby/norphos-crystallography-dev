@@ -19,6 +19,21 @@ class SystematicAbsence(object):
 			self.pattern = self.pattern.reshape((4,4))
 
 	def is_reflection_type(self, hkl):
+		"""
+		Determine whether the given reflection indices (hkl or hkil) will be 
+		affected by this systematic absence. Comparison is made with the 
+		configured pattern.
+
+		Parameters
+		----------
+		hkl : array_like
+			  A list or array containing indices hkl or hkil.
+
+		Returns
+		-------
+		out : bool
+			  True if given hkl matches the pattern.
+		"""
 		hkl = np.matrix(hkl)
 		#If we are dealing with Miller-Bravais 4-index reflections
 		if (self.pattern.size == 16) & (hkl.size == 3):
@@ -33,13 +48,55 @@ class SystematicAbsence(object):
 			return False
 
 	def is_reflection_absent(self, hkl):
+		"""
+		Determine whether the reflection with given indices (hkl or hkil) will 
+		be systematically absent. Checks first whether reflection is the right 
+		type to be affected by this systematic absence.
+
+		Parameters
+		----------
+		hkl : array_like
+			  A list or array containing indices hkl or hkil.
+
+		Returns
+		-------
+		out : bool
+			  True if the reflection is systematically absent.
+
+		"""
 		if self.is_reflection_type(hkl):
 			hkl = np.matrix(hkl).T
 			product = self.condition.dot(hkl)
-			print "product: "+str(product)
 			if product % self.divisor == 0:
 				return True
 			else:
 				return False
 		else:
 			return False
+
+	def __str__(self):
+		def convert_to_hkl(row, report_none=False):
+			if row.size == 3:
+				labels = ["h","k","l"]
+			else:
+				labels = ["h","k","i","l"]
+			
+			hkl_str = ""
+			for i in range(row.size):
+				if row[0,i] != 0:
+					if row[0,i] < 0:
+						hkl_str = hkl_str.rstrip("+")+"-"
+					elif abs(row[0,i]) > 1:
+						hkl_str = str(row[0,i])
+					hkl_str += labels[i]+"+"
+
+			if report_none & (hkl_str == ""):
+				return str(0)
+			else:
+				return hkl_str.rstrip("+")
+
+		absence_str = ""
+		for i in range(self.pattern[0].size):
+			absence_str += convert_to_hkl(self.pattern.T[i], True)
+		absence_str += ": "+convert_to_hkl(self.condition)+"="+str(self.divisor)+"n"
+		return absence_str
