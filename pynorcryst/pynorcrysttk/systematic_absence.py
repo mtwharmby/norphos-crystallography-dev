@@ -17,6 +17,8 @@ class SystematicAbsence(object):
 			self.pattern = self.pattern.reshape((3,3))
 		elif (self.pattern.size == 16) & (self.pattern.shape != (4,4)):
 			self.pattern = self.pattern.reshape((4,4))
+		else:
+			raise MatrixException("Expecting square matrix of size 3x3 or 4x4. Got: "+str(self.pattern.size))
 
 	def is_reflection_type(self, hkl):
 		"""
