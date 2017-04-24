@@ -220,5 +220,14 @@ class PrincipleAxis(Enum):
     C = 2
     NONE = -1
 
+class CrystalFamily(Enum):
+    __order__ = "triclinic monoclinic orthorhombic tetragonal hexagonal cubic"
+    triclinic = 0
+    monoclinic = 1
+    orthorhombic = 2
+    tetragonal = 3 #trigonal is not a crystal family
+    hexagonal = 5  #skipped 4 for consistency with CrystalSystem
+    cubic = 6
+
 Lattice = namedtuple('Lattice', 'a, b, c, al, be, ga, principle_axis')
 Lattice.__new__.__defaults__ = (None, None, None, None, None, PrincipleAxis.NONE)
