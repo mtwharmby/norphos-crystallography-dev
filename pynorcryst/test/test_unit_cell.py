@@ -1,5 +1,6 @@
 from pynorcrysttk.unit_cell import UnitCell
 from pynorcrysttk.unit_cell import PrincipleAxis
+from pynorcrysttk.unit_cell import CrystalSystem
 from pynorcrysttk.unit_cell import Lattice
 
 import numpy as np
@@ -251,3 +252,32 @@ class TestUnitCell(unittest.TestCase):
         coords = self.uc.find_vector_magnitude([1,1,1])
         dist = np.sqrt(np.sum(np.power(coords, 2)))
         assert_almost_equal(15.21688, dist, places=5)
+
+    def test_lattice_family(self):
+        #Cubic a = 3
+        self.uc = UnitCell(Lattice(3))
+        assert_equal(CrystalSystem.cubic, self.uc.lattice.lattice_family)
+
+        #Rhombohedral a = 3; al = 60
+        self.uc.update_cell(Lattice(3, al=60))
+        assert_equal(CrystalSystem.rhombohedral, self.uc.lattice.lattice_family)
+
+        #Hexagonal a = 5; c = 2; ga = 120
+        self.uc.update_cell(Lattice(5,c=2,ga=120))
+        assert_equal(CrystalSystem.hexagonal, self.uc.lattice.lattice_family)
+
+        #Tetragonal a = b = 2; c = 5
+        self.uc.update_cell(Lattice(2, 5))
+        assert_equal(CrystalSystem.tetragonal, self.uc.lattice.lattice_family)
+
+        #a = 5; b = 3; c = 2; angles 90
+        self.uc.update_cell(Lattice(5, 3, 2))
+        assert_equal(CrystalSystem.orthorhombic, self.uc.lattice.lattice_family)
+
+        #a = 2; b = 3; c = 5; be = 30 al = ga = 90
+        self.uc.update_cell(Lattice(2, 3, 5, be=30))
+        assert_equal(CrystalSystem.monoclinic, self.uc.lattice.lattice_family)
+
+        #a = 3; b = 5; c = 2; al = 30deg; be = 45 deg; ga = 60 deg
+        self.uc.update_cell(Lattice(3, 5 ,2, 30, 45, 60))
+        assert_equal(CrystalSystem.triclinic, self.uc.lattice.lattice_family)

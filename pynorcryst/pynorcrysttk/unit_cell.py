@@ -41,10 +41,11 @@ class UnitCell(object):
         a, b, c = lattice.a, lattice.b, lattice.c
         angles = [lattice.al, lattice.be, lattice.ga]
         p_axis = PrincipleAxis.NONE
+        lat_fam = CrystalSystem.triclinic
 
         #Implicit rhombohedral...
-        if ([a,b,c].count(None) == 2 and angles.count(None) ==2):
-            #et all angles to be same
+        if ([a,b,c].count(None) == 2 and angles.count(None) == 2):
+            #Set all angles to be same
             for val in angles:
                 if val is not None:
                     angles = [val,]*3
@@ -54,8 +55,10 @@ class UnitCell(object):
                     b = val
                     c = val
                     break
+            lat_fam = CrystalSystem.rhombohedral
         elif (a == b and a == c and al == be and al == ga):
             #Explicit rhombohedral
+            lat_fam = CrystalSystem.rhombohedral
             pass
         else:
             #We've got some 90degree angles or all angles have been specified
@@ -73,21 +76,26 @@ class UnitCell(object):
                     b = c = a
                     if angles[0] != 90:
                         #Rhombohedral
+                        lat_fam = CrystalSystem.rhombohedral
                         pass
                     else:
                         #Cubic
+                        lat_fam = CrystalSystem.cubic
                         pass
                 elif (a == b and a != c) or (b is None and c is not None):
                     #Tetragonal
                     b = a
                     p_axis = PrincipleAxis.C
+                    lat_fam = CrystalSystem.tetragonal
                 elif (a != b and c is None):
                     #Tetragonal (b -> c)
                     c = b
                     b = a
                     p_axis = PrincipleAxis.C
+                    lat_fam = CrystalSystem.tetragonal
                 else:
                     #Orthorhombic (a != b != c)
+                    lat_fam = CrystalSystem.orthorhombic
                     if (lattice.b is None or lattice.c is None):
                         raise LatticeException("Orthorhombic requires all three lengths to be given")
             elif True not in angles_compared:
@@ -106,13 +114,14 @@ class UnitCell(object):
                         raise LatticeException("Hexagonal requires at least two lengths to be given")
                     angles = [90,90,120]
                     p_axis = PrincipleAxis.C
+                    lat_fam = CrystalSystem.hexagonal
                 else:
                     #Monoclinic
                     if lattice.principle_axis != PrincipleAxis.NONE:
                         p_axis = lattice.principle_axis
                         old_angles = angles
                         angles = [90]*3
-        
+
                         if angles_compared[0]:
                             #ga different
                             angles[p_axis.value] = old_angles[2]
@@ -134,8 +143,9 @@ class UnitCell(object):
                         else:
                             #al different
                             p_axis = PrincipleAxis.A
+                    lat_fam = CrystalSystem.monoclinic
 
-        return Lattice(a, b, c, angles[0], angles[1], angles[2], p_axis)
+        return Lattice(a, b, c, angles[0], angles[1], angles[2], p_axis, lat_fam)
 
     def __determine_metric_tensor(self):
         def __calc_offaxis(a, b, angle):
@@ -222,14 +232,15 @@ class PrincipleAxis(Enum):
     NONE = -1
 
 class CrystalSystem(Enum):
-    __order__ = "triclinic monoclinic orthorhombic tetragonal trigonal hexagonal cubic"
+    __order__ = "triclinic monoclinic orthorhombic tetragonal trigonal rhombohedral hexagonal cubic"
     triclinic = 0
     monoclinic = 1
     orthorhombic = 2
     tetragonal = 3
     trigonal = 4
-    hexagonal = 5
-    cubic = 6
+    rhombohedral = 5
+    hexagonal = 6
+    cubic = 7
 
-Lattice = namedtuple('Lattice', 'a, b, c, al, be, ga, principle_axis')
-Lattice.__new__.__defaults__ = (None, None, None, None, None, PrincipleAxis.NONE)
+Lattice = namedtuple('Lattice', 'a, b, c, al, be, ga, principle_axis, lattice_family')
+Lattice.__new__.__defaults__ = (None, None, None, None, None, PrincipleAxis.NONE, CrystalSystem.triclinic)
