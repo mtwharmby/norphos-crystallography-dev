@@ -13,6 +13,7 @@ class UnitCell(object):
         self.al_r, self.be_r, self.ga_r = None, None, None
         #Lattices
         self.lattice, self.reciprocal_lattice = None, None
+        self.crystal_family = None
         self.orthonormalisation_matrix = None
         #Tensors
         self.metric_tensor, self.reciprocal_metric_tensor = None, None
@@ -220,13 +221,14 @@ class PrincipleAxis(Enum):
     C = 2
     NONE = -1
 
-class CrystalFamily(Enum):
-    __order__ = "triclinic monoclinic orthorhombic tetragonal hexagonal cubic"
+class CrystalSystem(Enum):
+    __order__ = "triclinic monoclinic orthorhombic tetragonal trigonal hexagonal cubic"
     triclinic = 0
     monoclinic = 1
     orthorhombic = 2
-    tetragonal = 3 #trigonal is not a crystal family
-    hexagonal = 5  #skipped 4 for consistency with CrystalSystem
+    tetragonal = 3
+    trigonal = 4
+    hexagonal = 5
     cubic = 6
 
 Lattice = namedtuple('Lattice', 'a, b, c, al, be, ga, principle_axis')
