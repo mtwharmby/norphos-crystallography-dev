@@ -28,6 +28,7 @@ class UnitCell(object):
                                                            self.lattice.ga])
         self.metric_tensor = self.__determine_metric_tensor()
         self.volume = np.sqrt(np.linalg.det(self.metric_tensor))
+        self.crystal_family = self.__get_crystal_family_for_lattice_system()
         self.reciprocal_metric_tensor = np.linalg.inv(self.metric_tensor)
         self.reciprocal_volume = np.sqrt(np.linalg.det(self.reciprocal_metric_tensor))
         self.reciprocal_lattice = self.__determine_reciprocal_lattice()
@@ -41,7 +42,7 @@ class UnitCell(object):
         a, b, c = lattice.a, lattice.b, lattice.c
         angles = [lattice.al, lattice.be, lattice.ga]
         p_axis = PrincipleAxis.NONE
-        lat_fam = CrystalSystem.triclinic
+        lat_sys = CrystalSystem.TRICLINIC
 
         #Implicit rhombohedral...
         if ([a,b,c].count(None) == 2 and angles.count(None) == 2):
@@ -55,10 +56,10 @@ class UnitCell(object):
                     b = val
                     c = val
                     break
-            lat_fam = CrystalSystem.rhombohedral
+            lat_sys = CrystalSystem.RHOMBOHEDRAL
         elif (a == b and a == c and al == be and al == ga):
             #Explicit rhombohedral
-            lat_fam = CrystalSystem.rhombohedral
+            lat_sys = CrystalSystem.RHOMBOHEDRAL
             pass
         else:
             #We've got some 90degree angles or all angles have been specified
@@ -76,26 +77,26 @@ class UnitCell(object):
                     b = c = a
                     if angles[0] != 90:
                         #Rhombohedral
-                        lat_fam = CrystalSystem.rhombohedral
+                        lat_sys = CrystalSystem.RHOMBOHEDRAL
                         pass
                     else:
                         #Cubic
-                        lat_fam = CrystalSystem.cubic
+                        lat_sys = CrystalSystem.CUBIC
                         pass
                 elif (a == b and a != c) or (b is None and c is not None):
                     #Tetragonal
                     b = a
                     p_axis = PrincipleAxis.C
-                    lat_fam = CrystalSystem.tetragonal
+                    lat_sys = CrystalSystem.TETRAGONAL
                 elif (a != b and c is None):
                     #Tetragonal (b -> c)
                     c = b
                     b = a
                     p_axis = PrincipleAxis.C
-                    lat_fam = CrystalSystem.tetragonal
+                    lat_sys = CrystalSystem.TETRAGONAL
                 else:
                     #Orthorhombic (a != b != c)
-                    lat_fam = CrystalSystem.orthorhombic
+                    lat_sys = CrystalSystem.ORTHORHOMBIC
                     if (lattice.b is None or lattice.c is None):
                         raise LatticeException("Orthorhombic requires all three lengths to be given")
             elif True not in angles_compared:
@@ -114,7 +115,7 @@ class UnitCell(object):
                         raise LatticeException("Hexagonal requires at least two lengths to be given")
                     angles = [90,90,120]
                     p_axis = PrincipleAxis.C
-                    lat_fam = CrystalSystem.hexagonal
+                    lat_sys = CrystalSystem.HEXAGONAL
                 else:
                     #Monoclinic
                     if lattice.principle_axis != PrincipleAxis.NONE:
@@ -143,9 +144,9 @@ class UnitCell(object):
                         else:
                             #al different
                             p_axis = PrincipleAxis.A
-                    lat_fam = CrystalSystem.monoclinic
+                    lat_sys = CrystalSystem.MONOCLINIC
 
-        return Lattice(a, b, c, angles[0], angles[1], angles[2], p_axis, lat_fam)
+        return Lattice(a, b, c, angles[0], angles[1], angles[2], p_axis, lat_sys)
 
     def __determine_metric_tensor(self):
         def __calc_offaxis(a, b, angle):
@@ -223,6 +224,18 @@ class UnitCell(object):
 
         return matrix.dot(coordinates)
 
+    def __get_crystal_family_for_lattice_system(self):
+        crystal_family_to_lattice_system = {
+            CrystalSystem.TRICLINIC : CrystalSystem.TRICLINIC,
+            CrystalSystem.MONOCLINIC : CrystalSystem.MONOCLINIC,
+            CrystalSystem.ORTHORHOMBIC : CrystalSystem.ORTHORHOMBIC,
+            CrystalSystem.TETRAGONAL : CrystalSystem.TETRAGONAL,
+            CrystalSystem.RHOMBOHEDRAL : CrystalSystem.HEXAGONAL,
+            CrystalSystem.HEXAGONAL : CrystalSystem.HEXAGONAL,
+            CrystalSystem.CUBIC : CrystalSystem.CUBIC
+            }
+        return crystal_family_to_lattice_system[self.lattice.lattice_system]
+
 
 class PrincipleAxis(Enum):
     __order__ = "A B C" #Needed for python 2.7
@@ -232,15 +245,16 @@ class PrincipleAxis(Enum):
     NONE = -1
 
 class CrystalSystem(Enum):
-    __order__ = "triclinic monoclinic orthorhombic tetragonal trigonal rhombohedral hexagonal cubic"
-    triclinic = 0
-    monoclinic = 1
-    orthorhombic = 2
-    tetragonal = 3
-    trigonal = 4
-    rhombohedral = 5
-    hexagonal = 6
-    cubic = 7
+    __order__ = "TRICLINIC MONOCLINIC ORTHORHOMBIC TETRAGONAL TRIGONAL RHOMBOHEDRAL HEXAGONAL CUBIC"
+    TRICLINIC = 0
+    MONOCLINIC = 1
+    ORTHORHOMBIC = 2
+    TETRAGONAL = 3
+    TRIGONAL = 4
+    RHOMBOHEDRAL = 5
+    HEXAGONAL = 6
+    CUBIC = 7
 
-Lattice = namedtuple('Lattice', 'a, b, c, al, be, ga, principle_axis, lattice_family')
-Lattice.__new__.__defaults__ = (None, None, None, None, None, PrincipleAxis.NONE, CrystalSystem.triclinic)
+
+Lattice = namedtuple('Lattice', 'a, b, c, al, be, ga, principle_axis, lattice_system')
+Lattice.__new__.__defaults__ = (None, None, None, None, None, PrincipleAxis.NONE, CrystalSystem.TRICLINIC)
