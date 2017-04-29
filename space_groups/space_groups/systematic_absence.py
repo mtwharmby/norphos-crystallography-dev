@@ -1,6 +1,6 @@
 import numpy as np
 
-from crystal_exceptions import *
+from sg_exceptions import *
 
 class SystematicAbsence(object):
 

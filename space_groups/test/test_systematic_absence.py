@@ -1,4 +1,4 @@
-from pynorcrysttk.systematic_absence import SystematicAbsence
+from space_groups.systematic_absence import SystematicAbsence
 
 import unittest
 from nose.tools import assert_true, assert_false, assert_equal
