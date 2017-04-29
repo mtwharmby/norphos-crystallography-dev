@@ -1,7 +1,7 @@
-from pynorcrysttk.unit_cell import UnitCell
-from pynorcrysttk.unit_cell import PrincipleAxis
-from pynorcrysttk.unit_cell import CrystalSystem
-from pynorcrysttk.unit_cell import Lattice
+from crystal_toolkit.unit_cell import UnitCell
+from crystal_toolkit.unit_cell import PrincipleAxis
+from crystal_toolkit.unit_cell import CrystalSystem
+from crystal_toolkit.unit_cell import Lattice
 
 import numpy as np
 from collections import namedtuple
