@@ -5,6 +5,8 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
+import uk.co.norphos.crystallography.api.Lattice;
+
 public class UnitCell {
 	
 	private Lattice lattice, reciprocalLattice;

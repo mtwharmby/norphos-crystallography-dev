@@ -1,4 +1,4 @@
-package uk.co.norphos.crystallography.toolkit;
+package uk.co.norphos.crystallography.api;
 
 public enum CrystalSystem {
 	TRICLINIC, MONOCLINIC, ORTHORHOMBIC, TETRAGONAL,

@@ -1,5 +1,8 @@
 package uk.co.norphos.crystallography.toolkit;
 
+import uk.co.norphos.crystallography.api.CrystalSystem;
+import uk.co.norphos.crystallography.api.Lattice;
+
 public class Crystal {
 	
 	private UnitCell unitCell;
