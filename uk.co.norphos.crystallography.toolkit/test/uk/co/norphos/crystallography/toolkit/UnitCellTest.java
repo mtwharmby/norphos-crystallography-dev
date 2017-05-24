@@ -8,6 +8,8 @@ import org.apache.commons.math3.TestUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import uk.co.norphos.crystallography.api.Lattice;
+
 public class UnitCellTest {
 	
 	private UnitCell uc;
