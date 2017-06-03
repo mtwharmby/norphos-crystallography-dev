@@ -1,19 +1,36 @@
 package uk.co.norphos.crystallography.api;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.io.Serializable;
 
-import uk.co.norphos.crystallography.toolkit.PrincipleAxis;
+/**
+ * A bean-like object which holds all of the parameters necessary to specify a 
+ * periodic lattice.
+ * 
+ * @author Michael Wharmby
+ *
+ */
+public class Lattice implements Serializable {
 
-public class Lattice {
-
+	private static final long serialVersionUID = 5083826131364460534L;
+	
 	private final double a, b, c, al, be, ga;
 	private final double alR, beR, gaR; //Angles in radians for convenience
 	private final PrincipleAxis principleAxis;
 
-	private Lattice(Double a, Double b, Double c, Double al, Double be, Double ga, PrincipleAxis pAxis) {
+	/**
+	 * Construct lattice object from a distances a, b, c and angles alpha, 
+	 * beta, gamma. Principle axis indicates highest symmetry axis of the 
+	 * lattice.
+	 *  
+	 * @param a double in Angstroms
+	 * @param b double in Angstroms
+	 * @param c double in Angstroms
+	 * @param al double in degrees
+	 * @param be double in degrees
+	 * @param ga double in degrees
+	 * @param pAxis {@link PrincipleAxis}
+	 */
+	public Lattice(double a, double b, double c, double al, double be, double ga, PrincipleAxis pAxis) {
 		this.a = a;
 		this.b = b;
 		this.c = c;
@@ -26,42 +43,83 @@ public class Lattice {
 		this.principleAxis = pAxis;
 	}
 
-	public double a() {
+	/**
+	 * Return lattice a parameter
+	 * @return double in Angstroms
+	 */
+	public double getA() {
 		return a;
 	}
-
-	public double b() {
+	/**
+	 * Return lattice b parameter
+	 * @return double in Angstroms
+	 */
+	public double getB() {
 		return b;
 	}
 
-	public double c() {
+	/**
+	 * Return lattice c parameter
+	 * @return double in Angstroms
+	 */
+	public double getC() {
 		return c;
 	}
 
-	public double al() {
+	/**
+	 * Return lattice alpha parameter
+	 * @return double in degrees
+	 */
+	public double getAl() {
 		return al;
 	}
 
-	public double be() {
+	/**
+	 * Return lattice beta parameter
+	 * @return double in degrees
+	 */
+	public double getBe() {
 		return be;
 	}
 
-	public double ga() {
+	/**
+	 * Return lattice gamma parameter
+	 * @return double in degrees
+	 */
+	public double getGa() {
 		return ga;
 	}
 
-	public double alR() {
+	/**
+	 * Return lattice alpha parameter
+	 * @return double in radians
+	 */
+	public double getAlR() {
 		return alR;
 	}
 
-	public double beR() {
+	/**
+	 * Return lattice beta parameter
+	 * @return double in radians
+	 */
+	public double getBeR() {
 		return beR;
 	}
 
-	public double gaR() {
+	/**
+	 * Return lattice gamma parameter
+	 * @return double in radians
+	 */
+	public double getGaR() {
 		return gaR;
 	}
 
+	/**
+	 * Return the {@link PrincipleAxis} of this lattice. Useful for example 
+	 * with monoclinic unit cells, where the principle axis is that 
+	 * perpendicular to plane containing the two 90degree lattice angles.
+	 * @return {@link PrincipleAxis}
+	 */
 	public PrincipleAxis getPrincipleAxis() {
 		return principleAxis;
 	}
@@ -129,125 +187,6 @@ public class Lattice {
 		if (principleAxis != other.principleAxis)
 			return false;
 		return true;
-	}
-
-
-
-	public static class LatticeBuilder {
-
-		private Double a, b, c;
-		private Double[] angles = new Double[3];
-		private boolean reciprocalLattice = false;
-		private PrincipleAxis pAxis = PrincipleAxis.NONE;
-
-		public LatticeBuilder(double a) {
-			this.a = a;
-		}
-
-		public LatticeBuilder setB(double b) {
-			this.b = b;
-			return this;
-		}
-
-		public LatticeBuilder setC(double c) {
-			this.c = c;
-			return this;
-		}
-
-		public LatticeBuilder setAl(double al) {
-			angles[0] = al;
-			return this;
-		}
-
-		public LatticeBuilder setBe(double be) {
-			angles[1] = be;
-			return this;
-		}
-
-		public LatticeBuilder setGa(double ga) {
-			angles[2] = ga;
-			return this;
-		}
-
-		public LatticeBuilder setReciprocalLattice(boolean reciprocalLattice) {
-			this.reciprocalLattice = reciprocalLattice;
-			return this;
-		}
-
-		@Override
-		public String toString() {
-			return "LatticeBuilder [a=" + a + ", b=" + b + ", c=" + c + ", al=" + angles[0] 
-					+ ", be=" + angles[1] + ", ga=" + angles[2] + ", pAxis=" + pAxis + "]";
-		}
-
-		public Lattice build() {
-			if ((Collections.frequency(Arrays.asList(angles), null) == 2 && (b == null && c == null)) || 
-					(angles[0] != null && angles[0] == angles[1] && angles[0] == angles[2])){
-				//Rhombohedral
-				if (b == null) b = a;
-				if (c == null) c = a;
-				for (Double val : angles) {
-					if (val != null) {
-						angles[0] = val;
-						angles[1] = val;
-						angles[2] = val;
-						break;
-					}
-				}
-			} else {
-				//Change all null angle values to 90 & compare them to one-another
-				for (int i = 0; i < 3; i++) {
-					if (angles[i] == null) angles[i] = 90.0;
-				}
-				List<Boolean> anglesCompared = new ArrayList<>(3); //[al-be, al-ga, be-ga]
-				anglesCompared.add(angles[0].equals(angles[1]));
-				anglesCompared.add(angles[0].equals(angles[2]));
-				anglesCompared.add(angles[1].equals(angles[2]));
-
-				if (!anglesCompared.contains(false)) {
-					if ((a == b && a == c) || (b == null && c == null)) {
-						//Cubic
-						b = c = a;
-					} else if ((a == b && a != c) || (b == null && c != null)) {
-						//Tetragonal
-						b = a;
-						pAxis = PrincipleAxis.C;
-					} else {
-						//Orthorhombic (a != b != c)
-						if (b == null || c == null) throw new IllegalArgumentException("Orthorhombic requires all three lengths to be given");
-					}
-				} else if (!anglesCompared.contains(true)) {
-					//Triclinic
-					if (b == null || c == null) throw new IllegalArgumentException("Triclinic requires all three lengths to be given");
-				} else {
-					if (Arrays.asList(angles).contains(120.0) && (Collections.frequency(anglesCompared, true) == 1)) {
-						//Hexagonal
-						if (b == null) {
-							b = a;
-						}
-						pAxis = PrincipleAxis.C;
-					} else {
-						//Monoclinic
-						if (b == null || c == null) throw new IllegalArgumentException("Monoclinic requires all three lengths to be given");
-						if (anglesCompared.get(0)) {
-							//ga different
-							pAxis = PrincipleAxis.C;
-						} else if (anglesCompared.get(1)) {
-							//be different
-							pAxis = PrincipleAxis.B;
-						} else {
-							//al different
-							pAxis = PrincipleAxis.A;
-						}
-					}
-				}
-			}
-
-			//Principle axis is not meaningful for reciprocal lattice
-			if (reciprocalLattice) pAxis = null;
-
-			return new Lattice(a, b, c, angles[0], angles[1], angles[2], pAxis);
-		}
 	}
 
 }
