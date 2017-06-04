@@ -4,8 +4,10 @@ import static org.junit.Assert.assertEquals;
 
 import org.apache.commons.math3.TestUtils;
 import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,7 +24,7 @@ public class UnitCellTest {
 	
 	private Vector3D tricCoord1, tricCoord2, tricCoord3, tricCoord4;
 	private double tricDistance12, tricDistance23, tricDistance34;
-	private double tricAngle123, tricAngle234, tricDH1234;
+	private double tricAngle123, tricAngle234, tricDH1234, tricDH4312;
 	
 	@Before
 	public void setUp() {
@@ -47,16 +49,17 @@ public class UnitCellTest {
 		tricGMat = calculateMetricTensor(tricLatt);
 		tricRecipLatt = calculateReciprocalLattice(tricLatt, tricVol);
 		tricRecipGMat = calculateMetricTensor(tricRecipLatt);
-		tricCoord1 = new Vector3D(new double[]{0.61530, 0.02520, 0.07450});
-		tricCoord2 = new Vector3D(new double[]{0.00810, 0.17050, 0.17120});
+		tricCoord1 = new Vector3D(new double[]{0.61530, 0.02520, 0.07450});//O7
+		tricCoord2 = new Vector3D(new double[]{0.00810, 0.17050, 0.17120});//O8
 		tricDistance12 = 3.904;
-		tricCoord3 = new Vector3D(0.25710, 0.95880, 0.60530);
+		tricCoord3 = new Vector3D(0.25710, 0.95880, 0.60530);//O4
 		tricDistance23 = 8.673;
 		tricAngle123 = 72.12;
-		tricCoord4 = new Vector3D(0.38470, 0.97480, 0.92550);
+		tricCoord4 = new Vector3D(0.38470, 0.97480, 0.92550);//O7
 		tricDistance34 = 3.082;
 		tricAngle234 = 134.89;
-		tricDH1234 = Math.toRadians(72.99);
+		tricDH1234 = 72.99;
+		tricDH4312 = 126.41;
 	}
 	
 	private RealMatrix calculateMetricTensor(Lattice lattice) {
@@ -121,12 +124,153 @@ public class UnitCellTest {
 	}
 	
 	@Test
+	public void testOrthogonalization() {
+		Vector3D testVec1, testVec2, testVec3;
+		RealVector result;
+		RealMatrix convMat;
+		//Convert each of these fractional coordinates into Cartesians
+		testVec1 = new Vector3D(new double[]{1,0,0});
+		testVec2 = new Vector3D(new double[]{1,1,1});
+		testVec3 = new Vector3D(new double[]{0.23, 0.54, 0.56});
+		
+		/*
+		 * Cubic case
+		 */
+		uc = new UnitCell(cubicLatt);
+		convMat = uc.getOrthogonalizationMatrix();
+		result = new ArrayRealVector(new double[]{5.43018, 0, 0});
+		TestUtils.assertEquals("Wrong 1,0,0 vector in cubic", result, convert(convMat, testVec1), 1e-10);
+		TestUtils.assertEquals("Wrong 1,0,0 vector in cubic", result, vec3DToRealVec(uc.orthogonalize(testVec1)), 1e-10);
+		result = new ArrayRealVector(new double[]{5.43018, 5.43018, 5.43018});
+		TestUtils.assertEquals("Wrong 1,1,1 vector in cubic", result, convert(convMat, testVec2), 1e-10);
+		TestUtils.assertEquals("Wrong 1,1,1 vector in cubic", result, vec3DToRealVec(uc.orthogonalize(testVec2)), 1e-10);
+		result = new ArrayRealVector(new double[]{1.2489414, 2.9322972, 3.0409008});
+		TestUtils.assertEquals("Wrong 0.23, 0.54, 0.56 vector in cubic", result, convert(convMat, testVec3), 1e-10);
+		TestUtils.assertEquals("Wrong 0.23, 0.54, 0.56 vector in cubic", result, vec3DToRealVec(uc.orthogonalize(testVec3)), 1e-10);
+		
+		/*
+		 * Triclinic case
+		 */
+		uc = new UnitCell(tricLatt);
+		convMat = uc.getOrthogonalizationMatrix();
+		result = new ArrayRealVector(new double[]{7.19196, 0, 0});
+		TestUtils.assertEquals("Wrong 1,0,0 vector in triclinic", result, convert(convMat, testVec1), 1e-6);
+		TestUtils.assertEquals("Wrong 1,0,0 vector in triclinic", result, vec3DToRealVec(uc.orthogonalize(testVec1)), 1e-6);
+		result = new ArrayRealVector(new double[]{12.948356, 7.647790, 7.600914});
+		TestUtils.assertEquals("Wrong 1,1,1 vector in triclinic", result, convert(convMat, testVec2), 1e-6);
+		TestUtils.assertEquals("Wrong 1,1,1 vector in triclinic", result, vec3DToRealVec(uc.orthogonalize(testVec2)), 1e-6);
+		result = new ArrayRealVector(new double[]{4.820167, 4.130754, 4.256512});
+		TestUtils.assertEquals("Wrong 0.23, 0.54, 0.56 vector in triclinic", result, convert(convMat, testVec3), 1e-6);
+		TestUtils.assertEquals("Wrong 0.23, 0.54, 0.56 vector in triclinic", result, vec3DToRealVec(uc.orthogonalize(testVec3)), 1e-6);
+	}
+	
+	@Test
+	public void testFractionalization() {
+		RealVector resultVec1, resultVec2, resultVec3;
+		Vector3D testVector3D;
+		RealMatrix convMat;
+		//Convert Cartesian coordinates into each of these fractionals
+		resultVec1 = new ArrayRealVector(new double[]{1,0,0});
+		resultVec2 = new ArrayRealVector(new double[]{1,1,1});
+		resultVec3 = new ArrayRealVector(new double[]{0.23, 0.54, 0.56});
+		
+		/*
+		 * Cubic case
+		 */
+		uc = new UnitCell(cubicLatt);
+		convMat = uc.getFractionalizationMatrix();
+		testVector3D = new Vector3D(new double[]{5.43018, 0, 0});
+		TestUtils.assertEquals("Wrong 1,0,0 vector in cubic", resultVec1, convert(convMat, testVector3D), 1e-10);
+		TestUtils.assertEquals("Wrong 1,0,0 vector in cubic", resultVec1, vec3DToRealVec(uc.fractionalize(testVector3D)), 1e-10);
+		testVector3D = new Vector3D(new double[]{5.43018, 5.43018, 5.43018});
+		TestUtils.assertEquals("Wrong 1,1,1 vector in cubic", resultVec2, convert(convMat, testVector3D), 1e-10);
+		TestUtils.assertEquals("Wrong 1,1,1 vector in cubic", resultVec2, vec3DToRealVec(uc.fractionalize(testVector3D)), 1e-10);
+		testVector3D = new Vector3D(new double[]{1.2489414, 2.9322972, 3.0409008});
+		TestUtils.assertEquals("Wrong 0.23, 0.54, 0.56 vector in cubic", resultVec3, convert(convMat, testVector3D), 1e-10);
+		TestUtils.assertEquals("Wrong 0.23, 0.54, 0.56 vector in cubic", resultVec3, vec3DToRealVec(uc.fractionalize(testVector3D)), 1e-10);
+		
+		/*
+		 * Triclinic case
+		 */
+		uc = new UnitCell(tricLatt);
+		convMat = uc.getFractionalizationMatrix();
+		testVector3D = new Vector3D(new double[]{7.19196, 0, 0});
+		TestUtils.assertEquals("Wrong 1,0,0 vector in triclinic", resultVec1, convert(convMat, testVector3D), 1e-6);
+		TestUtils.assertEquals("Wrong 1,0,0 vector in triclinic", resultVec1, vec3DToRealVec(uc.fractionalize(testVector3D)), 1e-6);
+		testVector3D = new Vector3D(new double[]{12.948356, 7.647790, 7.600914});
+		TestUtils.assertEquals("Wrong 1,1,1 vector in triclinic", resultVec2, convert(convMat, testVector3D), 1e-6);
+		TestUtils.assertEquals("Wrong 1,1,1 vector in triclinic", resultVec2, vec3DToRealVec(uc.fractionalize(testVector3D)), 1e-6);
+		testVector3D = new Vector3D(new double[]{4.820167, 4.130754, 4.256512});
+		TestUtils.assertEquals("Wrong 0.23, 0.54, 0.56 vector in triclinic", resultVec3, convert(convMat, testVector3D), 1e-6);
+		TestUtils.assertEquals("Wrong 0.23, 0.54, 0.56 vector in triclinic", resultVec3, vec3DToRealVec(uc.fractionalize(testVector3D)), 1e-6);
+	}
+	
+	private RealVector convert(RealMatrix convMat, Vector3D testVec) {
+		RealVector val = convMat.operate(vec3DToRealVec(testVec));
+		return val;
+	}
+	
+	private RealVector vec3DToRealVec(Vector3D vec) {
+		return new ArrayRealVector(vec.toArray());
+	}
+	
+	@Test
 	public void testDistanceCalculation() {
 		uc = new UnitCell(tricLatt);
 				
 		Vector3D fracVec1 = tricCoord2.subtract(tricCoord1);
 		assertEquals("Wrong distance between sites 1 & 2 by vector", tricDistance12, uc.calculateLength(fracVec1), 5e-4);
 		assertEquals("Wrong distance between sites 2 & 3 by sites", tricDistance23, uc.calculateDistance(tricCoord2, tricCoord3), 5e-4);
+	}
+	
+	@Test
+	public void latticeVectorCalculus() {
+		Lattice simpleCubic = new Lattice(10,10,10,90,90,90);
+		Lattice simpleMonoc = new Lattice(10,10,10,90,90,45);
+		Lattice simpleTric  = new Lattice(10,10,10,45,45,45);
+		Vector3D  vec100, vec110, crossResult;
+		double dotResult;
+		
+		vec100 = new Vector3D(new double[]{1,0,0});
+		vec110 = new Vector3D(new double[]{1,1,0});
+		
+		/*
+		 * Cubic case
+		 */
+		uc = new UnitCell(simpleCubic);
+		//dot product of should be 100
+		dotResult = 10. * 10. * Math.pow(2., 0.5) * Math.cos(Math.toRadians(45));
+		assertEquals(dotResult, uc.latticeDotProduct(vec100, vec110), 1e-10);
+		
+		//cross product should be 0,0,100
+		crossResult = uc.fractionalize(new Vector3D(new double[]{0,0,1}).scalarMultiply(10. * 10. * Math.pow(2., 0.5) * Math.sin(Math.toRadians(45))));
+		TestUtils.assertEquals("", vec3DToRealVec(crossResult), vec3DToRealVec(uc.latticeCrossProduct(vec100, vec110)), 1e-10);
+		
+		/*
+		 * Monoclinic case
+		 */
+		uc = new UnitCell(simpleMonoc);
+		//dot product should be 170.7106...
+		dotResult = 10. * 2. * 10. * Math.cos(Math.toRadians(22.5)) * Math.cos(Math.toRadians(22.5));
+		assertEquals(dotResult, uc.latticeDotProduct(vec100, vec110), 1e-10);
+		
+		//cross product should be 0,0,70.7106...
+		crossResult = uc.fractionalize(new Vector3D(new double[]{0,0,1}).scalarMultiply(10. * 2. * 10. * Math.cos(Math.toRadians(22.5)) * Math.sin(Math.toRadians(22.5))));
+		System.out.println(crossResult);
+		TestUtils.assertEquals("", vec3DToRealVec(crossResult), vec3DToRealVec(uc.latticeCrossProduct(vec100, vec110)), 1e-10);
+		
+		/*
+		 * Triclinic case
+		 */
+		uc = new UnitCell(simpleTric);
+		//dot product should be 170.7106...
+		dotResult = 10. * 2. * 10. * Math.cos(Math.toRadians(22.5)) * Math.cos(Math.toRadians(22.5));
+		assertEquals(dotResult, uc.latticeDotProduct(vec100, vec110), 1e-10);
+		
+		//cross product should be 0,0,70.7106...
+		crossResult = uc.fractionalize(new Vector3D(new double[]{0,0,1}).scalarMultiply(10. * 2. * 10. * Math.cos(Math.toRadians(22.5)) * Math.sin(Math.toRadians(22.5))));
+		System.out.println(crossResult);
+		TestUtils.assertEquals("", vec3DToRealVec(crossResult), vec3DToRealVec(uc.latticeCrossProduct(vec100, vec110)), 1e-10);
 	}
 	
 	@Test
@@ -142,6 +286,14 @@ public class UnitCellTest {
 		fracVec2 = tricCoord2.subtract(tricCoord3);
 		assertEquals("Wrong angle between sites 1/2/3 by vector", tricAngle123, Math.toDegrees(uc.calculateAngle(fracVec1, fracVec2)), 5e-3);
 		assertEquals("Wrong angle between sites 2/3/4 by sites", tricAngle234, Math.toDegrees(uc.calculateAngle(tricCoord2, tricCoord3, tricCoord4)), 5e-3);
+	}
+	
+	@Test
+	public void testDihedralCalculation() {
+		uc = new UnitCell(tricLatt);
+		
+		assertEquals("Wrong dihedral angle between sites 1/2/3/4", tricDH1234, Math.toDegrees(uc.calculateDihedralAngle(tricCoord1, tricCoord2, tricCoord3, tricCoord4)), 5e-3);
+		assertEquals("Wrong dihedral angle between sites 4/3/1/2", tricDH4312, Math.toDegrees(uc.calculateDihedralAngle(tricCoord4, tricCoord3, tricCoord1, tricCoord2)), 5e-3);
 	}
 	
 	

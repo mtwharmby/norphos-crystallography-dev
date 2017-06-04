@@ -20,12 +20,64 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 	 */
 	Lattice getLattice();
 	
+	default double getA() {
+		return getLattice().getA();
+	}
+	
+	default double getB() {
+		return getLattice().getB();
+	}
+	
+	default double getC() {
+		return getLattice().getC();
+	}
+	
+	default double getAlpha() {
+		return getLattice().getAl();
+	}
+	
+	default double getBeta() {
+		return getLattice().getBe();
+	}
+	
+	default double getGamma() {
+		return getLattice().getGa();
+	}
+	
+	//TODO
+	//default double getVolume
+	//default CrystalSystem getCrystalSystem 
+	
 	/**
 	 * Return the reciprocal-space lattice parameters for this IUnitCell.
 	 * @return {@link Lattice}
 	 */
 	default Lattice getReciprocalLattice() {
 		return getReciprocal().getLattice();
+	}
+	
+	default double getAStar() {
+		return getReciprocalLattice().getA();
+	}
+	
+	default double getBStar() {
+		return getReciprocalLattice().getB();
+	}
+	
+	default double getCStar() {
+		return getReciprocalLattice().getC();
+	}
+	
+	default double getAlphaStar() {
+		return getReciprocalLattice().getAl();
+	}
+	
+	default double getBetaStar() {
+		return getReciprocalLattice().getBe();
+	}
+	
+	default double getGammaStar() {
+		return getReciprocalLattice().getGa();
 	}
 	
 	/**
@@ -54,45 +106,42 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 	 */
 	IUnitCell getReciprocal();
 	
-//FIXME
-//	/**
-//	 * Convert a vector in Cartesian coordinates to its equivalent in the 
-//	 * fractional coordinate system of this unit cell.
-//	 * 
-//	 * @param cartVector Vector3D in Cartesian coordinates
-//	 * @return Vector3D in fractional coordinates of the current lattice
-//	 */
-//	default Vector3D fractionalize(Vector3D cartVector) {
-//		//TODO
-//		return null;
-//	}
-//	
-//	/**
-//	 * Convert a vector in fractional coordinates of this unit cell into an 
-//	 * equivalent vector in Cartesian coordinates.
-//	 * 
-//	 * @param fracVector Vector3D in fractional coordinates
-//	 * @return Vector3D in Cartesian coordinates
-//	 */
-//	default Vector3D orthogonalize(Vector3D fracVector) {
-//		//TODO
-//		return null;
-//	}
-//	
-//	/**
-//	 * Return matrix to convert Cartesian coordinates into fractional 
-//	 * coordinates for this unit cell's lattice.
-//	 * @return RealMatrix
-//	 */
-//	RealMatrix getFractionalizationMatrix();
-//	
-//	/**
-//	 * Return matrix to convert fractional coordinates of this unit cell's 
-//	 * lattice into Cartesian coordinates.
-//	 * @return RealMatrix
-//	 */
-//	RealMatrix getOrthogonalizationMatrix();
-//	
+	/**
+	 * Convert a vector in Cartesian coordinates to its equivalent in the 
+	 * fractional coordinate system of this unit cell.
+	 * 
+	 * @param cartVector Vector3D in Cartesian coordinates
+	 * @return Vector3D in fractional coordinates of the current lattice
+	 */
+	default Vector3D fractionalize(Vector3D cartVector) {
+		return new Vector3D(getFractionalizationMatrix().operate(cartVector.toArray()));
+	}
+	
+	/**
+	 * Convert a vector in fractional coordinates of this unit cell into an 
+	 * equivalent vector in Cartesian coordinates.
+	 * 
+	 * @param fracVector Vector3D in fractional coordinates
+	 * @return Vector3D in Cartesian coordinates
+	 */
+	default Vector3D orthogonalize(Vector3D fracVector) {
+		return new Vector3D(getOrthogonalizationMatrix().operate(fracVector.toArray()));
+	}
+	
+	/**
+	 * Return matrix to convert Cartesian coordinates into fractional 
+	 * coordinates for this unit cell's lattice.
+	 * @return RealMatrix
+	 */
+	RealMatrix getFractionalizationMatrix();
+	
+	/**
+	 * Return matrix to convert fractional coordinates of this unit cell's 
+	 * lattice into Cartesian coordinates.
+	 * @return RealMatrix
+	 */
+	RealMatrix getOrthogonalizationMatrix();
+	
 	/**
 	 * Calculate the length of a vector specified in fractional coordinates of 
 	 * this unit cell.
@@ -136,21 +185,18 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 	default double calculateAngle(Vector3D site1, Vector3D site2, Vector3D site3) {
 		return calculateAngle(site2.subtract(site1), site2.subtract(site3));
 	}
-//	
-//	/**
-//	 * Calculate the angle between the planes containing site1, site2 and 
-//	 * site3 and site2, site3 and site4.
-//	 * 
-//	 * @param site1 Vector3D in fractional coordinates
-//	 * @param site2 Vector3D in fractional coordinates
-//	 * @param site3 Vector3D in fractional coordinates
-//	 * @param site4 Vector3D in fractional coordinates
-//	 * @return double angle between planes in radians
-//	 */
-//	default double calculateDihedralAngle(Vector3D site1, Vector3D site2, Vector3D site3, Vector3D site4) {
-//		//TODO
-//		return 0;
-//	}
+	
+	/**
+	 * Calculate the angle between the planes containing site1, site2 and 
+	 * site3 and site2, site3 and site4.
+	 * 
+	 * @param site1 Vector3D in fractional coordinates
+	 * @param site2 Vector3D in fractional coordinates
+	 * @param site3 Vector3D in fractional coordinates
+	 * @param site4 Vector3D in fractional coordinates
+	 * @return double angle between planes in radians
+	 */
+	double calculateDihedralAngle(Vector3D site1, Vector3D site2, Vector3D site3, Vector3D site4);
 //	
 //	/**
 //	 * Maximum {@link MillerIndex} for the given d-spacing limit.
