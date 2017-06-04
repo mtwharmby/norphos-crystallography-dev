@@ -1,5 +1,6 @@
 package uk.co.norphos.crystallography.api;
 
+import org.apache.commons.math3.geometry.euclidean.threed.Vector3D;
 import org.apache.commons.math3.linear.RealMatrix;
 
 /**
@@ -20,44 +21,12 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 	Lattice getLattice();
 	
 	/**
-	 * Change the real-space {@link Lattice} of this IUnitCell. 
-	 * 
-	 * @param {@link Lattice} lattice
-	 */
-	void setLattice(Lattice lattice);
-	
-	/**
-	 * Set one or more of the lattice parameters. A new lattice instance will 
-	 * be created and all values will be recalculated.
-	 * 
-	 * @param a Double length in Angstroms
-	 * @param b Double length in Angstroms
-	 * @param c Double length in Angstroms
-	 * @param alpha Double angle in degrees
-	 * @param beta Double angle in degrees
-	 * @param gamma Double angle in degrees
-	 * @throws LatticeException if the the given lattice parameters are 
-	 *         incompatible or inconsistent with the {@link CrystalSystem} 
-	 */
-	void setLattice(Double a, Double b, Double c, Double alpha, Double beta, Double gamma) throws LatticeException;
-	
-	/**
 	 * Return the reciprocal-space lattice parameters for this IUnitCell.
 	 * @return {@link Lattice}
 	 */
 	default Lattice getReciprocalLattice() {
 		return getReciprocal().getLattice();
 	}
-	
-	/**
-	 * Return the {@link CrystalSystem} (i.e. lattice system) of the real-
-	 * space lattice. N.B. This may differ from the {@link CrystalSystem} 
-	 * reported from symmetry, e.g. the hexagonal lattice system contains 
-	 * both hexagonal and trigonal lattices; the rhombohedral lattice 
-	 * system is incorporated into the trigonal crystal system.
-	 * @return {@link CrystalSystem}
-	 */
-	CrystalSystem getLatticeSystem();
 	
 	/**
 	 * Return the volume of the unit cell.
@@ -124,51 +93,49 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 //	 */
 //	RealMatrix getOrthogonalizationMatrix();
 //	
-//	/**
-//	 * Calculate the length of a vector specified in fractional coordinates of 
-//	 * this unit cell.
-//	 * 
-//	 * @param fracVec Vector3D in fractional coordinates
-//	 * @return double length of vector
-//	 */
-//	double calculateLength(Vector3D fracVec);
-//	
-//	/**
-//	 * Calculate the distance between two sites specified in fractional 
-//	 * coordinates of this unit cell.
-//	 * 
-//	 * @param site1 Vector3D in fractional coordinates
-//	 * @param site2 Vector3D in fractional coordinates
-//	 * @return
-//	 */
-//	default double calculateDistance(Vector3D site1, Vector3D site2) {
-//		//TODO
-//		return 0;
-//	}
-//	
-//	/**
-//	 * Calculate the angle between two vectors specified in fractional 
-//	 * coordinates of this unit cell.
-//	 * 
-//	 * @param fracVec1 Vector3D in fractional coordinates
-//	 * @param fracVec2 Vector3D in fractional coordinates
-//	 * @return double angle between vectors in radians
-//	 */
-//	double calculateAngle(Vector3D fracVec1, Vector3D fracVec2);
-//	
-//	/**
-//	 * Calculate the angle between site 1 and site3 at site2 (i.e. the angle 
-//	 * between the vectors site1-site2 and site2-site3, c.f. bond angle).
-//	 * 
-//	 * @param site1 Vector3D in fractional coordinates
-//	 * @param site2 Vector3D in fractional coordinates
-//	 * @param site3 Vector3D in fractional coordinates
-//	 * @return double angle at site2 in radians
-//	 */
-//	default double calculateAngle(Vector3D site1, Vector3D site2, Vector3D site3) {
-//		//TODO
-//		return 0;
-//	}
+	/**
+	 * Calculate the length of a vector specified in fractional coordinates of 
+	 * this unit cell.
+	 * 
+	 * @param fracVec Vector3D in fractional coordinates
+	 * @return double length of vector
+	 */
+	double calculateLength(Vector3D fracVec);
+	
+	/**
+	 * Calculate the distance between two sites specified in fractional 
+	 * coordinates of this unit cell.
+	 * 
+	 * @param site1 Vector3D in fractional coordinates
+	 * @param site2 Vector3D in fractional coordinates
+	 * @return
+	 */
+	default double calculateDistance(Vector3D site1, Vector3D site2) {
+		return calculateLength(site2.subtract(site1));
+	}
+	
+	/**
+	 * Calculate the angle between two vectors specified in fractional 
+	 * coordinates of this unit cell.
+	 * 
+	 * @param fracVec1 Vector3D in fractional coordinates
+	 * @param fracVec2 Vector3D in fractional coordinates
+	 * @return double angle between vectors in radians
+	 */
+	double calculateAngle(Vector3D fracVec1, Vector3D fracVec2);
+	
+	/**
+	 * Calculate the angle between site 1 and site3 at site2 (i.e. the angle 
+	 * between the vectors site1-site2 and site2-site3, c.f. bond angle).
+	 * 
+	 * @param site1 Vector3D in fractional coordinates
+	 * @param site2 Vector3D in fractional coordinates
+	 * @param site3 Vector3D in fractional coordinates
+	 * @return double angle at site2 in radians
+	 */
+	default double calculateAngle(Vector3D site1, Vector3D site2, Vector3D site3) {
+		return calculateAngle(site2.subtract(site1), site2.subtract(site3));
+	}
 //	
 //	/**
 //	 * Calculate the angle between the planes containing site1, site2 and 
