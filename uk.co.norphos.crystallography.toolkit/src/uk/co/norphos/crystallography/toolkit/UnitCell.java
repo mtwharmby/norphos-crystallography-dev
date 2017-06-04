@@ -7,18 +7,20 @@ import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 
-import uk.co.norphos.crystallography.api.CrystalSystem;
 import uk.co.norphos.crystallography.api.IUnitCell;
 import uk.co.norphos.crystallography.api.Lattice;
-import uk.co.norphos.crystallography.api.LatticeException;
-import uk.co.norphos.crystallography.api.PrincipleAxis;
 
+/**
+ * FIXME
+ * @author Michael Wharmby
+ *
+ */
 public class UnitCell implements IUnitCell {
 	
 	private Lattice lattice;
 	private IUnitCell reciprocal;
 	private double volume;
-	private RealMatrix metricTensor;
+	private RealMatrix metricTensor, orthoMatrix, fracMatrix;
 	private LUDecomposition metricTensorLUDecomp;
 
 	
@@ -34,16 +36,28 @@ public class UnitCell implements IUnitCell {
 //	reciprocalVolume = Math.sqrt(reciprocalMetricTensorLUDecomp.getDeterminant());
 //	reciprocalLattice = determineReciprocalLattice();
 //}
+	/**
+	 * FIXME
+	 * @param realSpaceLattice
+	 */
 	public UnitCell(Lattice realSpaceLattice) {
 		lattice = realSpaceLattice;
 		metricTensor = determineMetricTensor();
 		metricTensorLUDecomp = new LUDecomposition(metricTensor);
-		volume = Math.sqrt(metricTensorLUDecomp.getDeterminant());
+		volume = Math.sqrt(metricTensorLUDecomp.getDeterminant()); //TODO put in Lattice
 		
 		//Create the reciprocal space unit cell; the reciprocal of that is the present instance
 		reciprocal = new UnitCell(metricTensorLUDecomp.getSolver().getInverse(), this);
+		
+		orthoMatrix = determineOrthogonalizationMatrix();
+		LUDecomposition orthoMatLUDecomp = new LUDecomposition(orthoMatrix);
+		fracMatrix = orthoMatLUDecomp.getSolver().getInverse();
 	}
 	
+	/**
+	 * FIXME
+	 * @param metricTensor
+	 */
 	public UnitCell(RealMatrix metricTensor) {
 		this(metricTensor, null);
 	}
@@ -93,7 +107,26 @@ public class UnitCell implements IUnitCell {
 
 		//FIXME This should probably call down to factory rather than making lattice directly
 		return new Lattice(rA, rB, rC, rAl, rBe, rGa);
-}
+	}
+	
+	private RealMatrix determineOrthogonalizationMatrix() {
+		double[] elems = getConversionMatrixElements(lattice, getReciprocalLattice());
+		return MatrixUtils.createRealMatrix(new double[][]{
+			{elems[0], elems[1], elems[2]},
+			{0       , elems[3], elems[4]},
+			{0       , 0       , elems[5]}});
+	}
+	
+	private double[] getConversionMatrixElements(Lattice one, Lattice two) {
+		double[] elems = new double[6];
+		elems[0] = one.getA();
+		elems[1] = one.getB() * Math.cos(one.getGaR());
+		elems[2] = one.getC() * Math.cos(one.getBeR());
+		elems[3] = one.getB() * Math.sin(one.getGaR());
+		elems[4] = -one.getC() * Math.sin(one.getBeR()) * Math.cos(two.getAlR());
+		elems[5] = 1 / two.getC();
+		return elems;
+	}
 
 	@Override
 	public Lattice getLattice() {
@@ -116,6 +149,16 @@ public class UnitCell implements IUnitCell {
 	}
 	
 	@Override
+	public RealMatrix getFractionalizationMatrix() {
+		return fracMatrix;
+	}
+
+	@Override
+	public RealMatrix getOrthogonalizationMatrix() {
+		return orthoMatrix;
+	}
+
+	@Override
 	public double calculateLength(Vector3D fracVec) {
 		RealVector vector = new ArrayRealVector(fracVec.toArray());
 		double product = vector.dotProduct(metricTensor.operate(vector));
@@ -132,10 +175,32 @@ public class UnitCell implements IUnitCell {
 		
 		return Math.acos(vector1.dotProduct(metricTensor.operate(vector2)) / (magVec1 * magVec2));
 	}
+	
+	@Override
+	public double calculateDihedralAngle(Vector3D site1, Vector3D site2, Vector3D site3, Vector3D site4) {
+		Vector3D vector12 = site2.subtract(site1);
+		Vector3D vector23 = site2.subtract(site3);
+		Vector3D vector34 = site3.subtract(site4);
+		
+		Vector3D plane123 = latticeCrossProduct(vector12, vector23);
+		Vector3D plane234 = latticeCrossProduct(vector34, vector23);
+		return Math.acos(plane123.dotProduct(new Vector3D(metricTensor.operate(plane234.toArray()))) / (calculateLength(plane123) * calculateLength(plane234)));
+		
+		
+	}
+	
+	public double latticeDotProduct(Vector3D vector1, Vector3D vector2) { //TODO add to API?
+		Vector3D cartVec1 = orthogonalize(vector1);
+		Vector3D cartVec2 = orthogonalize(vector2);
+		return cartVec2.dotProduct(cartVec1);
+	}
+	
+	public Vector3D latticeCrossProduct(Vector3D vector1, Vector3D vector2) { //TODO add to API?
+		Vector3D cartVec1 = orthogonalize(vector1);
+		Vector3D cartVec2 = orthogonalize(vector2);
+		return fractionalize(cartVec1.crossProduct(cartVec2));
+	}
 
-	
-	
-	
 	@Override
 	public int compareTo(IUnitCell o) {
 		// TODO Auto-generated method stub
