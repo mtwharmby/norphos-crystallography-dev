@@ -16,11 +16,12 @@ public class Lattice implements Serializable {
 	private final double a, b, c, al, be, ga;
 	private final double alR, beR, gaR; //Angles in radians for convenience
 	private final PrincipleAxis principleAxis;
-
+	private final CrystalSystem crystalSystem;
+	
 	/**
-	 * Construct lattice object from a distances a, b, c and angles alpha, 
-	 * beta, gamma. Principle axis indicates highest symmetry axis of the 
-	 * lattice.
+	 * Construct lattice object from distances a, b, c and angles alpha, beta, 
+	 * gamma. Crystal system defaults to TRICLINIC and Principle axis defaults 
+	 * to NONE.
 	 *  
 	 * @param a double in Angstroms
 	 * @param b double in Angstroms
@@ -28,9 +29,26 @@ public class Lattice implements Serializable {
 	 * @param al double in degrees
 	 * @param be double in degrees
 	 * @param ga double in degrees
+	 */
+	public Lattice(double a, double b, double c, double al, double be, double ga) {
+		this(a, b, c, al, be, ga, CrystalSystem.TRICLINIC, PrincipleAxis.NONE);
+	}
+	
+	/**
+	 * Construct lattice object from distances a, b, c and angles alpha, beta, 
+	 * gamma. Crystal system indicates the metric symmetry of the lattice. 
+	 * Principle axis indicates highest symmetry axis of the lattice.
+	 *  
+	 * @param a double in Angstroms
+	 * @param b double in Angstroms
+	 * @param c double in Angstroms
+	 * @param al double in degrees
+	 * @param be double in degrees
+	 * @param ga double in degrees
+	 * @param crystalSystem {@link CrystalSystem}
 	 * @param pAxis {@link PrincipleAxis}
 	 */
-	public Lattice(double a, double b, double c, double al, double be, double ga, PrincipleAxis pAxis) {
+	public Lattice(double a, double b, double c, double al, double be, double ga, CrystalSystem crystalSystem, PrincipleAxis pAxis) {
 		this.a = a;
 		this.b = b;
 		this.c = c;
@@ -41,6 +59,7 @@ public class Lattice implements Serializable {
 		this.ga = ga;
 		this.gaR = Math.toRadians(ga);
 		this.principleAxis = pAxis;
+		this.crystalSystem = crystalSystem;
 	}
 
 	/**
@@ -115,6 +134,14 @@ public class Lattice implements Serializable {
 	}
 
 	/**
+	 * Return the crystal system of this lattice.
+	 * @return {@link CrystalSystem}
+	 */
+	public CrystalSystem getCrystalSystem() {
+		return crystalSystem;
+	}
+
+	/**
 	 * Return the {@link PrincipleAxis} of this lattice. Useful for example 
 	 * with monoclinic unit cells, where the principle axis is that 
 	 * perpendicular to plane containing the two 90degree lattice angles.
@@ -127,7 +154,8 @@ public class Lattice implements Serializable {
 	@Override
 	public String toString() {
 		return "Lattice [a=" + a + ", b=" + b + ", c=" + c + ", al=" + al 
-				+ ", be=" + be + ", ga=" + ga + ", pAxis=" + principleAxis + "]";
+				+ ", be=" + be + ", ga=" + ga + ", crystalSystem=" 
+				+ crystalSystem	+ ", pAxis=" + principleAxis + "]";
 	}
 
 	@Override
@@ -153,6 +181,7 @@ public class Lattice implements Serializable {
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(gaR);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((crystalSystem == null) ? 0 : crystalSystem.hashCode());
 		result = prime * result + ((principleAxis == null) ? 0 : principleAxis.hashCode());
 		return result;
 	}
@@ -183,6 +212,8 @@ public class Lattice implements Serializable {
 		if (Double.doubleToLongBits(ga) != Double.doubleToLongBits(other.ga))
 			return false;
 		if (Double.doubleToLongBits(gaR) != Double.doubleToLongBits(other.gaR))
+			return false;
+		if (crystalSystem != other.crystalSystem)
 			return false;
 		if (principleAxis != other.principleAxis)
 			return false;
