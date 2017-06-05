@@ -1,0 +1,37 @@
+#======================================================================
+
+# CRYSTAL DATA
+
+#----------------------------------------------------------------------
+
+data_VESTA_phase_1
+
+
+_pd_phase_name                         'Al26pydc-02c3c3_F.cif'
+_cell_length_a                         7.19196(2)
+_cell_length_b                         8.1272(1)
+_cell_length_c                         8.12771(11)
+_cell_angle_alpha                      82.4809(4)
+_cell_angle_beta                       69.261(1)
+_cell_angle_gamma                      69.2584(11)
+_symmetry_space_group_name_H-M         'P -1'
+_symmetry_Int_Tables_number            2
+
+loop_
+_symmetry_equiv_pos_as_xyz
+   'x, y, z'
+   '-x, -y, -z'
+
+loop_
+   _atom_site_label
+   _atom_site_occupancy
+   _atom_site_fract_x
+   _atom_site_fract_y
+   _atom_site_fract_z
+   _atom_site_adp_type
+   _atom_site_B_iso_or_equiv
+   _atom_site_type_symbol
+   O3         1.0     0.2860(13)   -0.0269(13)    0.3209(13)   Biso  4.300000 O
+   O4         1.0     0.2571(11)   -0.0412(9)     0.6053(9)    Biso  2.820000 O
+   O7         1.0     0.3847(5)     0.9748(7)     0.9255(7)    Biso  1.520000 O
+   O8         1.0     0.0081(5)     0.1705(10)    0.1712(9)    Biso  2.680000 O
