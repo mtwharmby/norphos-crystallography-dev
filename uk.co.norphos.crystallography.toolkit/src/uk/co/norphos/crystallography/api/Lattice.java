@@ -15,13 +15,14 @@ public class Lattice implements Serializable {
 	
 	private final double a, b, c, al, be, ga;
 	private final double alR, beR, gaR; //Angles in radians for convenience
+	private final Double volume;
 	private final PrincipleAxis principleAxis;
 	private final CrystalSystem crystalSystem;
 	
 	/**
 	 * Construct lattice object from distances a, b, c and angles alpha, beta, 
-	 * gamma. Crystal system defaults to TRICLINIC and Principle axis defaults 
-	 * to NONE.
+	 * gamma. Volume is set to null, crystal system defaults to TRICLINIC and 
+	 * Principle axis defaults to NONE.
 	 *  
 	 * @param a double in Angstroms
 	 * @param b double in Angstroms
@@ -31,7 +32,24 @@ public class Lattice implements Serializable {
 	 * @param ga double in degrees
 	 */
 	public Lattice(double a, double b, double c, double al, double be, double ga) {
-		this(a, b, c, al, be, ga, CrystalSystem.TRICLINIC, PrincipleAxis.NONE);
+		this(a, b, c, al, be, ga, null, CrystalSystem.TRICLINIC, PrincipleAxis.NONE);
+	}
+	
+	/**
+	 * Construct lattice object from distances a, b, c and angles alpha, beta, 
+	 * gamma, volume and crystal system. Principle axis defaults to NONE.
+	 * 
+	 * @param a double in Angstroms
+	 * @param b double in Angstroms
+	 * @param c double in Angstroms
+	 * @param al double in degrees
+	 * @param be double in degrees
+	 * @param ga double in degrees
+	 * @param volume Double in Angstroms^3
+	 * @param crystalSystem {@link CrystalSystem}
+	 */
+	public Lattice(double a, double b, double c, double al, double be, double ga, double volume, CrystalSystem crystalSystem) {
+		this(a, b, c, al, be, ga, volume, crystalSystem, PrincipleAxis.NONE);
 	}
 	
 	/**
@@ -48,7 +66,7 @@ public class Lattice implements Serializable {
 	 * @param crystalSystem {@link CrystalSystem}
 	 * @param pAxis {@link PrincipleAxis}
 	 */
-	public Lattice(double a, double b, double c, double al, double be, double ga, CrystalSystem crystalSystem, PrincipleAxis pAxis) {
+	public Lattice(double a, double b, double c, double al, double be, double ga, Double volume, CrystalSystem crystalSystem, PrincipleAxis pAxis) {
 		this.a = a;
 		this.b = b;
 		this.c = c;
@@ -58,6 +76,7 @@ public class Lattice implements Serializable {
 		this.beR = Math.toRadians(be);
 		this.ga = ga;
 		this.gaR = Math.toRadians(ga);
+		this.volume = volume;
 		this.principleAxis = pAxis;
 		this.crystalSystem = crystalSystem;
 	}
@@ -134,6 +153,14 @@ public class Lattice implements Serializable {
 	}
 
 	/**
+	 * Return the volume of the unit cell defined by the lattice.
+	 * @return double in Angstroms^3
+	 */
+	public Double getVolume() {
+		return volume;
+	}
+
+	/**
 	 * Return the crystal system of this lattice.
 	 * @return {@link CrystalSystem}
 	 */
@@ -154,8 +181,9 @@ public class Lattice implements Serializable {
 	@Override
 	public String toString() {
 		return "Lattice [a=" + a + ", b=" + b + ", c=" + c + ", al=" + al 
-				+ ", be=" + be + ", ga=" + ga + ", crystalSystem=" 
-				+ crystalSystem	+ ", pAxis=" + principleAxis + "]";
+				+ ", be=" + be + ", ga=" + ga + ", volume=" + volume 
+				+", crystalSystem=" + crystalSystem	+ ", pAxis=" + principleAxis 
+				+ "]";
 	}
 
 	@Override
@@ -177,12 +205,13 @@ public class Lattice implements Serializable {
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(c);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + ((crystalSystem == null) ? 0 : crystalSystem.hashCode());
 		temp = Double.doubleToLongBits(ga);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
 		temp = Double.doubleToLongBits(gaR);
 		result = prime * result + (int) (temp ^ (temp >>> 32));
-		result = prime * result + ((crystalSystem == null) ? 0 : crystalSystem.hashCode());
 		result = prime * result + ((principleAxis == null) ? 0 : principleAxis.hashCode());
+		result = prime * result + ((volume == null) ? 0 : volume.hashCode());
 		return result;
 	}
 
@@ -209,13 +238,18 @@ public class Lattice implements Serializable {
 			return false;
 		if (Double.doubleToLongBits(c) != Double.doubleToLongBits(other.c))
 			return false;
+		if (crystalSystem != other.crystalSystem)
+			return false;
 		if (Double.doubleToLongBits(ga) != Double.doubleToLongBits(other.ga))
 			return false;
 		if (Double.doubleToLongBits(gaR) != Double.doubleToLongBits(other.gaR))
 			return false;
-		if (crystalSystem != other.crystalSystem)
-			return false;
 		if (principleAxis != other.principleAxis)
+			return false;
+		if (volume == null) {
+			if (other.volume != null)
+				return false;
+		} else if (!volume.equals(other.volume))
 			return false;
 		return true;
 	}
