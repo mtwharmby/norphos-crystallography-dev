@@ -19,32 +19,17 @@ public class UnitCell implements IUnitCell {
 	
 	private Lattice lattice;
 	private IUnitCell reciprocal;
-	private double volume;
 	private RealMatrix metricTensor, orthoMatrix, fracMatrix;
 	private LUDecomposition metricTensorLUDecomp;
 
-	
-//	public void updateCell(Lattice realSpaceLattice) {
-//	this.lattice = realSpaceLattice;
-//	volume = null;
-//
-//	metricTensor = determineMetricTensor();
-//	metricTensorLUDecomp = new LUDecomposition(metricTensor);
-//	volume = Math.sqrt(metricTensorLUDecomp.getDeterminant());
-//	reciprocalMetricTensor = metricTensorLUDecomp.getSolver().getInverse();
-//	reciprocalMetricTensorLUDecomp = new LUDecomposition(reciprocalMetricTensor);
-//	reciprocalVolume = Math.sqrt(reciprocalMetricTensorLUDecomp.getDeterminant());
-//	reciprocalLattice = determineReciprocalLattice();
-//}
 	/**
 	 * FIXME
 	 * @param realSpaceLattice
 	 */
 	public UnitCell(Lattice realSpaceLattice) {
-		lattice = realSpaceLattice;
-		metricTensor = determineMetricTensor();
+		metricTensor = determineMetricTensor(realSpaceLattice);
 		metricTensorLUDecomp = new LUDecomposition(metricTensor);
-		volume = Math.sqrt(metricTensorLUDecomp.getDeterminant()); //TODO put in Lattice
+		lattice = CrystallographyFactory.createLattice(metricTensor);
 		
 		//Create the reciprocal space unit cell; the reciprocal of that is the present instance
 		reciprocal = new UnitCell(metricTensorLUDecomp.getSolver().getInverse(), this);
@@ -65,8 +50,7 @@ public class UnitCell implements IUnitCell {
 	private UnitCell(RealMatrix metricTensor, IUnitCell reciprocal) {
 		this.metricTensor = metricTensor;
 		metricTensorLUDecomp = new LUDecomposition(metricTensor);
-		lattice = getLatticeFromMetricTensor();
-		volume = Math.sqrt(metricTensorLUDecomp.getDeterminant());
+		lattice = CrystallographyFactory.createLattice(metricTensor);
 		
 		if (reciprocal == null) {
 			reciprocal = new UnitCell(metricTensorLUDecomp.getSolver().getInverse());
@@ -76,37 +60,26 @@ public class UnitCell implements IUnitCell {
 	}
 	
 	
-	private RealMatrix determineMetricTensor() {
-		double p00, p01, p02, p11, p12, p22;
-		p00 = Math.pow(lattice.getA(),2);
-		p11 = Math.pow(lattice.getB(),2);
-		p22 = Math.pow(lattice.getC(),2);
-		p01 = offAxisCalculator(lattice.getA(), lattice.getB(), lattice.getGaR());
-		p02 = offAxisCalculator(lattice.getA(), lattice.getC(), lattice.getBeR());
-		p12 = offAxisCalculator(lattice.getB(), lattice.getC(), lattice.getAlR());
+	private RealMatrix determineMetricTensor(Lattice lattice) {
+		double[] lengths = lattice.getLengths();
+		double[] angles = lattice.getAnglesRadians();
 		
-		return MatrixUtils.createRealMatrix(new double[][]{
-			{p00, p01, p02},
-			{p01, p11, p12},
-			{p02, p12, p22}});
-	}
-	
-	private double offAxisCalculator(double a, double b, double angle) {
-		double result = a *b * Math.cos(angle);
-		if (Math.abs(result) < 1e-10) return 0.0;
-		return result;
-	}
-	
-	private Lattice getLatticeFromMetricTensor() {
-		double rA = Math.sqrt(metricTensor.getEntry(0, 0));
-		double rB = Math.sqrt(metricTensor.getEntry(1, 1));
-		double rC = Math.sqrt(metricTensor.getEntry(2, 2));
-		double rAl = Math.toDegrees(Math.acos(metricTensor.getEntry(1, 2) / (rB * rC)));
-		double rBe = Math.toDegrees(Math.acos(metricTensor.getEntry(0, 2) / (rA * rC)));
-		double rGa = Math.toDegrees(Math.acos(metricTensor.getEntry(0, 1) / (rA * rB)));
-
-		//FIXME This should probably call down to factory rather than making lattice directly
-		return new Lattice(rA, rB, rC, rAl, rBe, rGa);
+		double[][] tensor = new double[3][3];
+		int i, j, k;
+		//Set diagonal values
+		for (i = 0; i < 3; i++) {
+			tensor[i][i] = Math.pow(lengths[i], 2);
+		}
+		//Set off diagonal values
+		for (i = 0; i < 3; i++) {
+			j = (i + 1) % 3;
+			k = (j + 1) % 3;
+			double val = lengths[i] * lengths[j] * Math.cos(angles[k]);
+			if (Math.abs(val) < 1e-10) val = 0;
+			tensor[i][j] = val;
+			tensor[j][i] = val;
+		}
+		return MatrixUtils.createRealMatrix(tensor);
 	}
 	
 	private RealMatrix determineOrthogonalizationMatrix() {
@@ -131,11 +104,6 @@ public class UnitCell implements IUnitCell {
 	@Override
 	public Lattice getLattice() {
 		return lattice;
-	}
-
-	@Override
-	public double getVolume() {
-		return volume;
 	}
 
 	@Override

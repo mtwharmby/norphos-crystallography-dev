@@ -20,33 +20,69 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 	 */
 	Lattice getLattice();
 	
+	/**
+	 * Return the a parameter for the configured lattice.
+	 * @return double length in Angstrom
+	 */
 	default double getA() {
 		return getLattice().getA();
 	}
 	
+	/**
+	 * Return the b parameter for the configured lattice.
+	 * @return double length in Angstrom
+	 */
 	default double getB() {
 		return getLattice().getB();
 	}
 	
+	/**
+	 * Return the c parameter for the configured lattice.
+	 * @return double length in Angstrom
+	 */
 	default double getC() {
 		return getLattice().getC();
 	}
 	
+	/**
+	 * Return the alpha parameter for the configured lattice.
+	 * @return double angle in degrees
+	 */
 	default double getAlpha() {
 		return getLattice().getAl();
 	}
 	
+	/**
+	 * Return the beta parameter for the configured lattice.
+	 * @return double angle in degrees
+	 */
 	default double getBeta() {
 		return getLattice().getBe();
 	}
 	
+	/**
+	 * Return the gamma parameter for the configured lattice.
+	 * @return double angle in degrees
+	 */
 	default double getGamma() {
 		return getLattice().getGa();
 	}
 	
-	//TODO
-	//default double getVolume
-	//default CrystalSystem getCrystalSystem 
+	/**
+	 * Return the volume of the real-space unit cell of the configured lattice.
+	 * @return double unit cell volume in Angstrom^3
+	 */
+	default double getVolume() {
+		return getLattice().getVolume();
+	}
+	
+	/**
+	 * Return the lattice crystal system.
+	 * @return {@link CrystalSystem}
+	 */
+	default CrystalSystem getCrystalSystem() {
+		return getLattice().getCrystalSystem();
+	}
 	
 	/**
 	 * Return the reciprocal-space lattice parameters for this IUnitCell.
@@ -56,35 +92,53 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 		return getReciprocal().getLattice();
 	}
 	
+	/**
+	 * Return the a* parameter for the determined reciprocal lattice.
+	 * @return double length in Angstrom^-1
+	 */
 	default double getAStar() {
 		return getReciprocalLattice().getA();
 	}
-	
+
+	/**
+	 * Return the b* parameter for the determined reciprocal lattice.
+	 * @return double length in Angstrom^-1
+	 */
 	default double getBStar() {
 		return getReciprocalLattice().getB();
 	}
 	
+	/**
+	 * Return the c* parameter for the determined reciprocal lattice.
+	 * @return double length in Angstrom^-1
+	 */
 	default double getCStar() {
 		return getReciprocalLattice().getC();
 	}
 	
+	/**
+	 * Return the alpha* parameter for the determined reciprocal lattice.
+	 * @return double angle in degrees
+	 */
 	default double getAlphaStar() {
 		return getReciprocalLattice().getAl();
 	}
 	
+	/**
+	 * Return the beta* parameter for the determined reciprocal lattice.
+	 * @return double angle in degrees
+	 */
 	default double getBetaStar() {
 		return getReciprocalLattice().getBe();
 	}
 	
+	/**
+	 * Return the gamma* parameter for the determined reciprocal lattice.
+	 * @return double angle in degrees
+	 */
 	default double getGammaStar() {
 		return getReciprocalLattice().getGa();
 	}
-	
-	/**
-	 * Return the volume of the unit cell.
-	 * @return double volume in Angstrom^3
-	 */
-	double getVolume();
 	
 	/**
 	 * Return the metric tensor (G-matrix) for the real-space unit cell.
