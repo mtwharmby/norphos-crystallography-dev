@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  * @author Michael Wharmby
  *
  */
-public class Lattice implements Serializable {
+public class Lattice implements Serializable, Comparable<Lattice> {
 
 	private static final long serialVersionUID = 5083826131364460534L;
 	
@@ -213,6 +213,13 @@ public class Lattice implements Serializable {
 		return principleAxis;
 	}
 	
+	@Override
+	public int compareTo(Lattice o) {
+		// TODO Auto-generated method stub
+		//compare volume
+		return 0;
+	}
+
 	@Override
 	public String toString() {
 		return "Lattice [a=" + lengths[0] + ", b=" + lengths[1] + ", c=" + lengths[2] + ", al=" 
