@@ -1,6 +1,9 @@
 package uk.co.norphos.crystallography.api;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.stream.DoubleStream;
+import java.util.stream.Stream;
 
 /**
  * A bean-like object which holds all of the parameters necessary to specify a 
@@ -13,9 +16,8 @@ public class Lattice implements Serializable {
 
 	private static final long serialVersionUID = 5083826131364460534L;
 	
-	private final double a, b, c, al, be, ga;
-	private final double alR, beR, gaR; //Angles in radians for convenience
-	private final Double volume;
+	private final double[] lengths, angles, anglesRadians;
+	protected final Double volume;
 	private final PrincipleAxis principleAxis;
 	private final CrystalSystem crystalSystem;
 	
@@ -67,18 +69,51 @@ public class Lattice implements Serializable {
 	 * @param pAxis {@link PrincipleAxis}
 	 */
 	public Lattice(double a, double b, double c, double al, double be, double ga, Double volume, CrystalSystem crystalSystem, PrincipleAxis pAxis) {
-		this.a = a;
-		this.b = b;
-		this.c = c;
-		this.al = al;
-		this.alR = Math.toRadians(al);
-		this.be = be;
-		this.beR = Math.toRadians(be);
-		this.ga = ga;
-		this.gaR = Math.toRadians(ga);
+		lengths = new double[3];
+		lengths[0] = a;
+		lengths[1] = b;
+		lengths[2] = c;
+		angles = new double[3];
+		angles[0] = al;
+		angles[1] = be;
+		angles[2] = ga;
+		anglesRadians = DoubleStream.of(angles).map(val -> Math.toRadians(val)).toArray();
 		this.volume = volume;
 		this.principleAxis = pAxis;
 		this.crystalSystem = crystalSystem;
+	}
+	
+	public Lattice(Double[] lengths, Double angles[], Double volume, CrystalSystem crystalSystem, PrincipleAxis pAxis) {
+		this.lengths = Stream.of(lengths).mapToDouble(Double::doubleValue).toArray();
+		this.angles = Stream.of(angles).mapToDouble(Double::doubleValue).toArray();
+		this.anglesRadians = Stream.of(angles).mapToDouble(Double::doubleValue).map(val -> Math.toRadians(val)).toArray();
+		this.volume = volume;
+		this.crystalSystem = crystalSystem;
+		this.principleAxis = pAxis;
+	}
+	
+	/**
+	 * Returns all three lattice length parameters.
+	 * @return double[] in Angstrom
+	 */
+	public double[] getLengths() {
+		return lengths;
+	}
+	
+	/**
+	 * Returns all three lattice angle parameters.
+	 * @return double[] in degrees
+	 */
+	public double[] getAngles() {
+		return angles;
+	}
+
+	/**
+	 * Returns all three lattice angle parameters.
+	 * @return double[] in radians
+	 */
+	public double[] getAnglesRadians() {
+		return anglesRadians;
 	}
 
 	/**
@@ -86,14 +121,14 @@ public class Lattice implements Serializable {
 	 * @return double in Angstroms
 	 */
 	public double getA() {
-		return a;
+		return lengths[0];
 	}
 	/**
 	 * Return lattice b parameter
 	 * @return double in Angstroms
 	 */
 	public double getB() {
-		return b;
+		return lengths[1];
 	}
 
 	/**
@@ -101,7 +136,7 @@ public class Lattice implements Serializable {
 	 * @return double in Angstroms
 	 */
 	public double getC() {
-		return c;
+		return lengths[2];
 	}
 
 	/**
@@ -109,7 +144,7 @@ public class Lattice implements Serializable {
 	 * @return double in degrees
 	 */
 	public double getAl() {
-		return al;
+		return angles[0];
 	}
 
 	/**
@@ -117,7 +152,7 @@ public class Lattice implements Serializable {
 	 * @return double in degrees
 	 */
 	public double getBe() {
-		return be;
+		return angles[1];
 	}
 
 	/**
@@ -125,7 +160,7 @@ public class Lattice implements Serializable {
 	 * @return double in degrees
 	 */
 	public double getGa() {
-		return ga;
+		return angles[2];
 	}
 
 	/**
@@ -133,7 +168,7 @@ public class Lattice implements Serializable {
 	 * @return double in radians
 	 */
 	public double getAlR() {
-		return alR;
+		return anglesRadians[0];
 	}
 
 	/**
@@ -141,7 +176,7 @@ public class Lattice implements Serializable {
 	 * @return double in radians
 	 */
 	public double getBeR() {
-		return beR;
+		return anglesRadians[1];
 	}
 
 	/**
@@ -149,7 +184,7 @@ public class Lattice implements Serializable {
 	 * @return double in radians
 	 */
 	public double getGaR() {
-		return gaR;
+		return anglesRadians[2];
 	}
 
 	/**
@@ -180,36 +215,19 @@ public class Lattice implements Serializable {
 	
 	@Override
 	public String toString() {
-		return "Lattice [a=" + a + ", b=" + b + ", c=" + c + ", al=" + al 
-				+ ", be=" + be + ", ga=" + ga + ", volume=" + volume 
-				+", crystalSystem=" + crystalSystem	+ ", pAxis=" + principleAxis 
-				+ "]";
+		return "Lattice [a=" + lengths[0] + ", b=" + lengths[1] + ", c=" + lengths[2] + ", al=" 
+				+ angles[0] + ", be=" + angles[1] + ", ga=" + angles[2] + ", volume=" + volume 
+				+", crystalSystem=" + crystalSystem	+ ", principleAxis=" + principleAxis + "]";
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		long temp;
-		temp = Double.doubleToLongBits(a);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(al);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(alR);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(b);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(be);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(beR);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(c);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + Arrays.hashCode(angles);
+		result = prime * result + Arrays.hashCode(anglesRadians);
 		result = prime * result + ((crystalSystem == null) ? 0 : crystalSystem.hashCode());
-		temp = Double.doubleToLongBits(ga);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		temp = Double.doubleToLongBits(gaR);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
+		result = prime * result + Arrays.hashCode(lengths);
 		result = prime * result + ((principleAxis == null) ? 0 : principleAxis.hashCode());
 		result = prime * result + ((volume == null) ? 0 : volume.hashCode());
 		return result;
@@ -224,25 +242,13 @@ public class Lattice implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Lattice other = (Lattice) obj;
-		if (Double.doubleToLongBits(a) != Double.doubleToLongBits(other.a))
+		if (!Arrays.equals(angles, other.angles))
 			return false;
-		if (Double.doubleToLongBits(al) != Double.doubleToLongBits(other.al))
-			return false;
-		if (Double.doubleToLongBits(alR) != Double.doubleToLongBits(other.alR))
-			return false;
-		if (Double.doubleToLongBits(b) != Double.doubleToLongBits(other.b))
-			return false;
-		if (Double.doubleToLongBits(be) != Double.doubleToLongBits(other.be))
-			return false;
-		if (Double.doubleToLongBits(beR) != Double.doubleToLongBits(other.beR))
-			return false;
-		if (Double.doubleToLongBits(c) != Double.doubleToLongBits(other.c))
+		if (!Arrays.equals(anglesRadians, other.anglesRadians))
 			return false;
 		if (crystalSystem != other.crystalSystem)
 			return false;
-		if (Double.doubleToLongBits(ga) != Double.doubleToLongBits(other.ga))
-			return false;
-		if (Double.doubleToLongBits(gaR) != Double.doubleToLongBits(other.gaR))
+		if (!Arrays.equals(lengths, other.lengths))
 			return false;
 		if (principleAxis != other.principleAxis)
 			return false;
