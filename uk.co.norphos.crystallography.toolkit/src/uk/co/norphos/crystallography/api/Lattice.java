@@ -22,13 +22,13 @@ public class Lattice implements Serializable, Comparable<Lattice> {
 	private final CrystalSystem crystalSystem;
 	
 	/**
-	 * Construct lattice object from distances a, b, c and angles alpha, beta, 
-	 * gamma. Volume is set to null, crystal system defaults to TRICLINIC and 
-	 * Principle axis defaults to NONE.
+	 * Construct {@link Lattice} object from distances a, b, c and angles 
+	 * alpha, beta, gamma. Volume is set to null, crystal system defaults to 
+	 * TRICLINIC and Principle axis defaults to NONE.
 	 *  
-	 * @param a double in Angstroms
-	 * @param b double in Angstroms
-	 * @param c double in Angstroms
+	 * @param a double in Angstrom
+	 * @param b double in Angstrom
+	 * @param c double in Angstrom
 	 * @param al double in degrees
 	 * @param be double in degrees
 	 * @param ga double in degrees
@@ -38,16 +38,17 @@ public class Lattice implements Serializable, Comparable<Lattice> {
 	}
 	
 	/**
-	 * Construct lattice object from distances a, b, c and angles alpha, beta, 
-	 * gamma, volume and crystal system. Principle axis defaults to NONE.
+	 * Construct {@link Lattice} object from distances a, b, c and angles 
+	 * alpha, beta, gamma, volume and crystal system. Principle axis defaults 
+	 * to NONE.
 	 * 
-	 * @param a double in Angstroms
-	 * @param b double in Angstroms
-	 * @param c double in Angstroms
+	 * @param a double in Angstrom
+	 * @param b double in Angstrom
+	 * @param c double in Angstrom
 	 * @param al double in degrees
 	 * @param be double in degrees
 	 * @param ga double in degrees
-	 * @param volume Double in Angstroms^3
+	 * @param volume Double in Angstrom<sup>3</sup>
 	 * @param crystalSystem {@link CrystalSystem}
 	 */
 	public Lattice(double a, double b, double c, double al, double be, double ga, double volume, CrystalSystem crystalSystem) {
@@ -55,34 +56,39 @@ public class Lattice implements Serializable, Comparable<Lattice> {
 	}
 	
 	/**
-	 * Construct lattice object from distances a, b, c and angles alpha, beta, 
-	 * gamma. Crystal system indicates the metric symmetry of the lattice. 
-	 * Principle axis indicates highest symmetry axis of the lattice.
+	 * Construct {@link Lattice} object from distances a, b, c and angles 
+	 * alpha, beta, gamma. Crystal system indicates the metric symmetry of the 
+	 * lattice. Principle axis indicates highest symmetry axis of the lattice.
 	 *  
-	 * @param a double in Angstroms
-	 * @param b double in Angstroms
-	 * @param c double in Angstroms
+	 * @param a double in Angstrom
+	 * @param b double in Angstrom
+	 * @param c double in Angstrom
 	 * @param al double in degrees
 	 * @param be double in degrees
 	 * @param ga double in degrees
+	 * @param volume Double in Angstrom<sup>3</sup>
 	 * @param crystalSystem {@link CrystalSystem}
 	 * @param pAxis {@link PrincipleAxis}
 	 */
 	public Lattice(double a, double b, double c, double al, double be, double ga, Double volume, CrystalSystem crystalSystem, PrincipleAxis pAxis) {
-		lengths = new double[3];
-		lengths[0] = a;
-		lengths[1] = b;
-		lengths[2] = c;
-		angles = new double[3];
-		angles[0] = al;
-		angles[1] = be;
-		angles[2] = ga;
+		lengths = new double[]{a,b,c};
+		angles = new double[]{al,be,ga};
 		anglesRadians = DoubleStream.of(angles).map(val -> Math.toRadians(val)).toArray();
 		this.volume = volume;
 		this.principleAxis = pAxis;
 		this.crystalSystem = crystalSystem;
 	}
 	
+	/**
+	 * Construct {@link Lattice} object from distances a, b, c and angles 
+	 * alpha, beta, gamma. Crystal system indicates the metric symmetry of the 
+	 * lattice. Principle axis indicates highest symmetry axis of the lattice.
+	 * @param lengths Double[] lattice length parameters in Angstrom
+	 * @param angles Double[] lattice angle parameters in degrees
+	 * @param volume Double in Angstrom<sup>3</sup>
+	 * @param crystalSystem {@link CrystalSystem}
+	 * @param pAxis {@link PrincipleAxis}
+	 */
 	public Lattice(Double[] lengths, Double angles[], Double volume, CrystalSystem crystalSystem, PrincipleAxis pAxis) {
 		this.lengths = Stream.of(lengths).mapToDouble(Double::doubleValue).toArray();
 		this.angles = Stream.of(angles).mapToDouble(Double::doubleValue).toArray();
@@ -118,14 +124,14 @@ public class Lattice implements Serializable, Comparable<Lattice> {
 
 	/**
 	 * Return lattice a parameter
-	 * @return double in Angstroms
+	 * @return double in Angstrom
 	 */
 	public double getA() {
 		return lengths[0];
 	}
 	/**
 	 * Return lattice b parameter
-	 * @return double in Angstroms
+	 * @return double in Angstrom
 	 */
 	public double getB() {
 		return lengths[1];
@@ -133,7 +139,7 @@ public class Lattice implements Serializable, Comparable<Lattice> {
 
 	/**
 	 * Return lattice c parameter
-	 * @return double in Angstroms
+	 * @return double in Angstrom
 	 */
 	public double getC() {
 		return lengths[2];
@@ -189,7 +195,7 @@ public class Lattice implements Serializable, Comparable<Lattice> {
 
 	/**
 	 * Return the volume of the unit cell defined by the lattice.
-	 * @return double in Angstroms^3
+	 * @return double in Angstrom<sup>3</sup>
 	 */
 	public Double getVolume() {
 		return volume;

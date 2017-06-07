@@ -70,7 +70,7 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 	
 	/**
 	 * Return the volume of the real-space unit cell of the configured lattice.
-	 * @return double unit cell volume in Angstrom^3
+	 * @return double unit cell volume in Angstrom<sup>3</sup>
 	 */
 	default double getVolume() {
 		return getLattice().getVolume();
@@ -94,7 +94,7 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 	
 	/**
 	 * Return the a* parameter for the determined reciprocal lattice.
-	 * @return double length in Angstrom^-1
+	 * @return double length in Angstrom<sup>-1<sup>
 	 */
 	default double getAStar() {
 		return getReciprocalLattice().getA();
@@ -102,7 +102,7 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 
 	/**
 	 * Return the b* parameter for the determined reciprocal lattice.
-	 * @return double length in Angstrom^-1
+	 * @return double length in Angstrom<sup>-1<sup>
 	 */
 	default double getBStar() {
 		return getReciprocalLattice().getB();
@@ -110,7 +110,7 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 	
 	/**
 	 * Return the c* parameter for the determined reciprocal lattice.
-	 * @return double length in Angstrom^-1
+	 * @return double length in Angstrom<sup>-1<sup>
 	 */
 	default double getCStar() {
 		return getReciprocalLattice().getC();
@@ -253,9 +253,9 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 	double calculateDihedralAngle(Vector3D site1, Vector3D site2, Vector3D site3, Vector3D site4);
 //	
 //	/**
-//	 * Maximum {@link MillerIndex} for the given d-spacing limit.
+//	 * Maximum {@link MillerPlane} for the given d-spacing limit.
 //	 * 
-//	 * @param dSpacing in Angstrom^-1 TODO Right?
+//	 * @param dSpacing in Angstrom<sup>-1<sup> TODO Right?
 //	 * @return MillerIndex maximum hkl observable
 //	 */
 //	MillerIndex getMaxMillerIndex(double dSpacing);
@@ -263,10 +263,10 @@ public interface IUnitCell extends Comparable<IUnitCell> {
 //	/**
 //	 * Return the d-space value for a specific {@link MillerIndex}.
 //	 *  
-//	 * @param hkl {@link MillerIndex}
-//	 * @return double d-spacing in Angstrom^-1 TODO Right?
+//	 * @param hkl {@link MillerPlane}
+//	 * @return double d-spacing in Angstrom<sup>-1<sup> TODO Right?
 //	 */
-//	double getDSpacing(MillerIndex hkl);
+//	double calculateDSpacing(MillerPlane hkl);
 //	
 //	/**
 //	 * Determine whether this IUnitCell is similar to another one, within certain tolerances. 

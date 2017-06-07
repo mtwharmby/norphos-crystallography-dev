@@ -118,7 +118,7 @@ public class MillerPlane implements Serializable, Comparable<MillerPlane> {
 	/**
 	 * Return the real-space interplane spacing (d-spacing) of this family of 
 	 * {@link MillerPlane}s.
-	 * @return double d-spacing in Angstroms
+	 * @return double d-spacing in Angstrom
 	 */
 	public double getDSpacing() {
 		return dSpacing;
